@@ -1,0 +1,43 @@
+{
+  "name": "@ye/domain",
+  "version": "0.1.0",
+  "type": "module",
+  "license": "MIT",
+  "description": "The Core Domain for YeHole",
+  "homepage": "https://yeetunion.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kriegcloud/yeehole",
+    "directory": "packages/domain"
+  },
+  "bugs": {
+    "url": "https://github.com/kriegcloud/yeehole/issues"
+  },
+  "publishConfig": {
+    "access": "restricted",
+    "directory": "dist",
+    "provenance": true
+  },
+  "scripts": {
+    "codegen": "build-utils prepare-v2",
+    "build": "bun build-esm && bun build-annotate && bun build-cjs && build-utils pack-v2",
+    "build-esm": "tsc -b tsconfig.build.json",
+    "build-cjs": "babel build/esm --plugins @babel/transform-export-namespace-from --plugins @babel/transform-modules-commonjs --out-dir build/cjs --source-maps",
+    "build-annotate": "babel build/esm --plugins annotate-pure-calls --out-dir build/esm --source-maps",
+    "dtslint": "dtslint dtslint",
+    "check": "tsc -b tsconfig.json",
+    "test": "vitest",
+    "coverage": "vitest --coverage"
+  },
+  "devDependencies": {
+    "@types/jscodeshift": "^0.11.11",
+    "ajv": "^8.17.1",
+    "ast-types": "^0.14.2",
+    "jscodeshift": "^0.16.1",
+    "tinybench": "^2.9.0",
+    "zod": "^3.24.1"
+  },
+  "dependencies": {
+    "fast-check": "^3.23.1"
+  }
+}
