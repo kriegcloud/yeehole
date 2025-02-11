@@ -1,9 +1,7 @@
 import * as S from "effect/Schema";
-import { pipe } from "effect";
+import {pipe} from "effect/Function";
 
-
-
-export const makePrimitive = <A, I, R>(schema: S.Schema<A, I, R>) => pipe(Object.assign(schema, {
+const make = <A, I, R>(schema: S.Schema<A, I, R>) => pipe(Object.assign(schema, {
   OrUndefined: S.UndefinedOr(schema),
   OrNull: S.NullOr(schema),
   OrNullish: S.NullishOr(schema),
@@ -16,3 +14,7 @@ export const makePrimitive = <A, I, R>(schema: S.Schema<A, I, R>) => pipe(Object
     S.withConstructorDefault(() => defaultValue),
   ),
 }));
+
+export default {
+  make
+};

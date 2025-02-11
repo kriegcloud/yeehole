@@ -1,5 +1,7 @@
 /**
- * @category Demo
+ * @category Kernel
  * @since 0.1.0
  */
-export * as Demo from "./Demo.js";
+export * from "./Kernel.js";
+
+
