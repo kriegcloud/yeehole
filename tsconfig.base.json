@@ -12,8 +12,15 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "moduleResolution": "NodeNext",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "types": [],
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "types": [
+      "@types/bun",
+      "vite/client"
+    ],
     "isolatedModules": true,
     "sourceMap": true,
     "declarationMap": true,
@@ -35,11 +42,39 @@
     "module": "NodeNext",
     "incremental": true,
     "removeComments": false,
-    "plugins": [{ "name": "@effect/language-service" }],
+    "plugins": [
+      {
+        "name": "@effect/language-service"
+      }
+    ],
     "paths": {
-      "@ye/domain": ["./packages/domain/src/index.js"],
-      "@ye/domain/*": ["./packages/domain/src/*.js"],
-      "@ye/domain/test/*": ["./packages/domain/test/*.js"]
+      "@ye/domain": [
+        "./packages/domain/src/index.js"
+      ],
+      "@ye/domain/*": [
+        "./packages/domain/src/*.js"
+      ],
+      "@ye/domain/test/*": [
+        "./packages/domain/test/*.js"
+      ],
+      "@ye/env": [
+        "./packages/env/src/index.js"
+      ],
+      "@ye/env/*": [
+        "./packages/env/src/*.js"
+      ],
+      "@ye/env/test/*": [
+        "./packages/env/test/*.js"
+      ],
+      "@ye/demo": [
+        "./packages/demo/src/index.js"
+      ],
+      "@ye/demo/*": [
+        "./packages/demo/src/*.js"
+      ],
+      "@ye/demo/test/*": [
+        "./packages/demo/test/*.js"
+      ]
     }
   }
 }

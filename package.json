@@ -7,7 +7,7 @@
     }
   },
   "devDependencies": {
-    "@babel/cli": "^7.24.8",
+    "@babel/cli": "^7.26.4",
     "@babel/core": "^7.25.2",
     "@babel/plugin-transform-export-namespace-from": "^7.24.7",
     "@babel/plugin-transform-modules-commonjs": "^7.24.8",
@@ -29,17 +29,17 @@
     "ast-types": "^0.14.2",
     "babel-plugin-annotate-pure-calls": "^0.5.0",
     "fast-check": "^3.23.1",
-    "glob": "^11.0.0",
-    "jscodeshift": "^0.16.1",
+    "glob": "^11.0.1",
+    "jscodeshift": "^17.1.2",
     "madge": "^8.0.0",
-    "playwright": "^1.46.0",
+    "playwright": "^1.50.1",
     "rimraf": "^6.0.1",
     "syncpack": "^13.0.2",
-    "tsx": "^4.17.0",
+    "tsx": "^4.19.2",
     "turbo": "^2.4.1",
-    "typescript": "^5.7.2",
-    "vite": "^5.4.0",
-    "vitest": "^2.1.4"
+    "typescript": "^5.7.3",
+    "vite": "^6.1.0",
+    "vitest": "^3.0.5"
   },
   "private": true,
   "resolutions": {
