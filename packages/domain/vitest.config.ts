@@ -1,12 +1,13 @@
-import { mergeConfig, type ViteUserConfig } from "vitest/config"
-import shared from "../../vitest.shared.js"
+import { type ViteUserConfig, mergeConfig } from "vitest/config";
+import shared from "../../vitest.shared.js";
 
 const config: ViteUserConfig = {
   test: {
     coverage: {
-      reporter: ["html"]
-    }
-  }
-}
+      provider: "v8",
+      reporter: ["html"],
+    },
+  },
+};
 
-export default mergeConfig(shared, config)
+export default mergeConfig(shared, config);

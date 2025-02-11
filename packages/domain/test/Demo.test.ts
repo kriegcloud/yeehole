@@ -1,5 +1,5 @@
-import { expect, it, describe } from "@effect/vitest";
-import { sayBeep } from "../src/Demo.js"
+import { describe, expect, it } from "@effect/vitest";
+import { sayBeep } from "#Demo.js";
 
 describe("Demo", () => {
   it("should say beep", () => {

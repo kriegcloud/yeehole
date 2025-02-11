@@ -2,4 +2,4 @@
  * @category Demo
  * @since 0.1.0
  */
-export * as Demo from "./Demo.js"
+export * as Demo from "./Demo.js";
