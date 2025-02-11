@@ -1,38 +1,36 @@
 {
   "name": "@ye/domain",
+  "description": "The domain package for YeetUnion",
   "version": "0.1.0",
-  "type": "module",
-  "license": "MIT",
+  "bugs": "https://github.com/kriegcloud/yeet-union/issues",
+  "dependencies": {
+    "effect": "latest"
+  },
+  "homepage": "https://yeetunion.com",
   "imports": {
     "#*": "./src/*"
   },
-  "description": "The domain package for YeetUnion",
-  "homepage": "https://yeetunion.com",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/kriegcloud/yeet-union",
-    "directory": "packages/domain"
-  },
-  "bugs": {
-    "url": "https://github.com/kriegcloud/yeet-union/issues"
-  },
+  "license": "MIT",
   "publishConfig": {
     "access": "restricted",
     "directory": "dist",
     "provenance": true
   },
-  "scripts": {
-    "codegen": "build-utils prepare-v2",
-    "build": "bun build-esm && bun build-annotate && bun build-cjs && build-utils pack-v2",
-    "build-esm": "tsc -b tsconfig.build.json",
-    "build-cjs": "babel build/esm --plugins @babel/transform-export-namespace-from --plugins @babel/transform-modules-commonjs --out-dir build/cjs --source-maps",
-    "build-annotate": "babel build/esm --plugins annotate-pure-calls --out-dir build/esm --source-maps",
-    "dtslint": "dtslint dtslint",
-    "check": "tsc -b tsconfig.json",
-    "test": "vitest",
-    "coverage": "vitest --coverage"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kriegcloud/yeet-union",
+    "directory": "packages/domain"
   },
-  "dependencies": {
-    "effect": "latest"
-  }
+  "scripts": {
+    "build": "bun build-esm && bun build-annotate && bun build-cjs && build-utils pack-v2",
+    "build-annotate": "babel build/esm --plugins annotate-pure-calls --out-dir build/esm --source-maps",
+    "build-cjs": "babel build/esm --plugins @babel/transform-export-namespace-from --plugins @babel/transform-modules-commonjs --out-dir build/cjs --source-maps",
+    "build-esm": "tsc -b tsconfig.build.json",
+    "check": "tsc -b tsconfig.json",
+    "codegen": "build-utils prepare-v2",
+    "coverage": "vitest --coverage",
+    "dtslint": "dtslint dtslint",
+    "test": "vitest"
+  },
+  "type": "module"
 }

@@ -1,7 +1,9 @@
 // You can run this test suite with the following command:
 // npx vitest scripts/codemods/ts-fence.test.ts --config scripts/codemods/vitest.config.ts
+// @ts-ignore
 import type cs from "jscodeshift";
 import * as TestUtils from "jscodeshift/src/testUtils";
+// @ts-ignore
 import transformer from "./ts-fence.ts";
 
 const expectTransformation_ =

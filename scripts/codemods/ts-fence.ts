@@ -1,3 +1,4 @@
+// @ts-ignore
 import type cs from "jscodeshift";
 
 const EXAMPLE = "* @example\n";
