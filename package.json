@@ -1,24 +1,22 @@
 {
+  "name": "yeet-union",
   "private": true,
   "type": "module",
-  "packageManager": "bun@1.1.10",
   "workspaces": [
     "packages/*"
   ],
   "scripts": {
     "clean": "node scripts/clean.mjs",
-    "codegen": "bun --filter='*' run codegen",
+    "codegen": "bun --filter='*' --parallel run codegen",
     "codemod": "node scripts/codemod.mjs",
-    "build": "tsc -b tsconfig.build.json && bun --filter='*' run build",
+    "build": "tsc -b tsconfig.build.json && bun --filter='*' --parallel run build",
     "circular": "node scripts/circular.mjs",
     "test": "vitest",
     "coverage": "vitest --coverage",
     "check": "tsc -b tsconfig.json",
     "check-recursive": "bun --filter='*' exec tsc -b tsconfig.json",
-    "lint": "biome check .",
-    "lint-fix": "bun lint . --write",
-    "docgen": "bun --filter='*' exec docgen && node scripts/docs.mjs",
-    "dtslint": "bun --filter='*' run dtslint",
+    "docgen": "node scripts/docgen.mjs && node scripts/docs.mjs",
+    "dtslint": "node scripts/dtslint.mjs",
     "dtslint-clean": "dtslint --clean",
     "changeset-version": "changeset version && node scripts/version.mjs",
     "changeset-publish": "bun codemod && bun lint-fix && bun build && TEST_DIST= bun vitest && changeset publish"
@@ -56,15 +54,21 @@
     "@vitest/web-worker": "^2.1.4",
     "ast-types": "^0.14.2",
     "babel-plugin-annotate-pure-calls": "^0.5.0",
+    "fast-check": "^3.23.1",
     "glob": "^11.0.0",
     "jscodeshift": "^0.16.1",
     "madge": "^8.0.0",
     "playwright": "^1.46.0",
     "rimraf": "^6.0.1",
     "tsx": "^4.17.0",
+    "turbo": "^2.4.1",
     "typescript": "^5.7.2",
     "vite": "^5.4.0",
-    "vitest": "^2.1.4",
-    "@biomejs/biome": "latest"
+    "vitest": "^2.1.4"
+  },
+  "bun": {
+    "patchedDependencies": {
+      "@changesets/get-github-info@0.6.0": "patches/@changesets__get-github-info@0.6.0.patch"
+    }
   }
 }

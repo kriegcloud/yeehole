@@ -52,7 +52,7 @@ git checkout -b my-branch
 Ensure all required dependencies are installed by running:
 
 ```bash
-bun install  # Requires bun version 1.1.10
+bun install  # Requires bun version 1.10.0
 ```
 
 ## Making Changes

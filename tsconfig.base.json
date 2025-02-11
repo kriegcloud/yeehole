@@ -37,9 +37,9 @@
     "removeComments": false,
     "plugins": [{ "name": "@effect/language-service" }],
     "paths": {
-      "domain": ["./packages/domain/src/index.js"],
-      "domain/*": ["./packages/domain/src/*.js"],
-      "domain/test/*": ["./packages/domain/test/*.js"],
+      "effect": ["./packages/effect/src/index.js"],
+      "effect/*": ["./packages/effect/src/*.js"],
+      "effect/test/*": ["./packages/effect/test/*.js"]
     }
   }
 }

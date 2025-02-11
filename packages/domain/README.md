@@ -41,7 +41,7 @@ We welcome contributions via pull requests! Here are some guidelines to help you
 
 1. Fork the repository and clone it to your local machine.
 2. Create a new branch for your changes: `git checkout -b my-new-feature`.
-3. Ensure you have the required dependencies installed by running: `bun install` (assuming bun version `1.x`).
+3. Ensure you have the required dependencies installed by running: `bun install` (assuming bun version `8.x`).
 4. Make your desired changes and, if applicable, include tests to validate your modifications.
 5. Run the following commands to ensure the integrity of your changes:
    - `bun check`: Verify that the code compiles.

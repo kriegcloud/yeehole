@@ -4,8 +4,7 @@ import shared from "../../vitest.shared.js"
 const config: ViteUserConfig = {
   test: {
     coverage: {
-      reporter: ["html"],
-      include: ["src/ParseResult.ts"]
+      reporter: ["html"]
     }
   }
 }

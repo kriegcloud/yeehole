@@ -3,15 +3,15 @@
   "version": "0.1.0",
   "type": "module",
   "license": "MIT",
-  "description": "The Core Domain for YeHole",
+  "description": "The domain package for YeetUnion",
   "homepage": "https://yeetunion.com",
   "repository": {
     "type": "git",
-    "url": "https://github.com/kriegcloud/yeehole",
-    "directory": "packages/domain"
+    "url": "https://github.com/kriegcloud/yeet-union",
+    "directory": "packages/effect"
   },
   "bugs": {
-    "url": "https://github.com/kriegcloud/yeehole/issues"
+    "url": "https://github.com/kriegcloud/yeet-union/issues"
   },
   "publishConfig": {
     "access": "restricted",
@@ -29,15 +29,7 @@
     "test": "vitest",
     "coverage": "vitest --coverage"
   },
-  "devDependencies": {
-    "@types/jscodeshift": "^0.11.11",
-    "ajv": "^8.17.1",
-    "ast-types": "^0.14.2",
-    "jscodeshift": "^0.16.1",
-    "tinybench": "^2.9.0",
-    "zod": "^3.24.1"
-  },
   "dependencies": {
-    "fast-check": "^3.23.1"
+    "effect": "latest"
   }
 }

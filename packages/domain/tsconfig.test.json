@@ -8,6 +8,6 @@
     "types": ["node"],
     "tsBuildInfoFile": ".tsbuildinfo/test.tsbuildinfo",
     "rootDir": "test",
-    "outDir": "build/test" // Some packages import test files from `@ye/domain`, hence we need to emit `d.ts` files here.
+    "outDir": "build/test" // Some packages import test files from `effect`, hence we need to emit `d.ts` files here.
   }
 }
