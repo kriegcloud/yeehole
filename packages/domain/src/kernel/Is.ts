@@ -1,5 +1,5 @@
-import type { Tracer } from "effect"
-import { Array, Option, pipe, SchemaAST } from "effect"
+import type {Tracer} from "effect"
+import {Array, Option, pipe, SchemaAST} from "effect"
 import * as S from "effect/Schema"
 import {extendMany} from "#kernel/schema/ext.js";
 import type {NonEmptyReadonlyArray} from "effect/Array";
@@ -83,8 +83,7 @@ export const tags = <
 ) =>
   S.Literal(...self.map((key) => {
     const ast = key.fields._tag.ast as S.PropertySignatureDeclaration
-    const tag = (ast.type as SchemaAST.Literal).literal
-    return tag
+    return (ast.type as SchemaAST.Literal).literal
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   })) as any as S.Literal<
     {
@@ -111,3 +110,4 @@ export const TaggedUnion = <
         tags: tags(a)
       }))
   )
+
