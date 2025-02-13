@@ -8,7 +8,7 @@ import { Data, Effect, Option, Schema, SchemaAST, pipe } from "effect";
 import * as ReadonlyArray from "effect/Array";
 
 /**
- * @since 0.3.0
+ * @since 0.1.0
  * @category models
  */
 type SchemaType<F extends Schema.Struct.Fields> = Schema.Schema.Type<
@@ -16,7 +16,7 @@ type SchemaType<F extends Schema.Struct.Fields> = Schema.Schema.Type<
 >;
 
 /**
- * @since 0.3.0
+ * @since 0.1.0
  * @category models
  */
 export interface Lens<S, A> {
@@ -26,7 +26,7 @@ export interface Lens<S, A> {
 }
 
 /**
- * @since 0.3.0
+ * @since 0.1.0
  * @category errors
  */
 export class ValidationError extends Data.TaggedError("ValidationError")<{
@@ -34,19 +34,19 @@ export class ValidationError extends Data.TaggedError("ValidationError")<{
 }> {}
 
 /**
- * @since 0.3.0
+ * @since 0.1.0
  * @category errors
  */
 export class BuilderError extends Data.TaggedError("BuilderError") {}
 
 /**
- * @since 0.3.0
+ * @since 0.1.0
  * @category models
  */
 export type Transform<A> = (a: Partial<A>) => Partial<A>;
 
 /**
- * @since 0.3.0
+ * @since 0.1.0
  * @category models
  */
 export interface BuilderOp<F extends Schema.Struct.Fields, R> {
@@ -66,7 +66,7 @@ export interface BuilderOp<F extends Schema.Struct.Fields, R> {
 }
 
 /**
- * @since 0.3.0
+ * @since 0.1.0
  * @category models
  */
 export type BuilderLens<A> = {
@@ -78,7 +78,7 @@ export type BuilderLens<A> = {
 };
 
 /**
- * @since 0.3.0
+ * @since 0.1.0
  * @category models
  */
 export type Builder<F extends Schema.Struct.Fields, R> = BuilderOp<F, R> &
@@ -87,7 +87,7 @@ export type Builder<F extends Schema.Struct.Fields, R> = BuilderOp<F, R> &
 /**
  * Creates a lens for a specific field
  *
- * @since 0.3.0
+ * @since 0.1.0
  * @category constructors
  */
 const createLens = <S, K extends keyof S>(key: K): Lens<S, S[K]> => {
@@ -106,7 +106,7 @@ const createLens = <S, K extends keyof S>(key: K): Lens<S, S[K]> => {
 /**
  * Creates a builder lens for a specific field
  *
- * @since 0.3.0
+ * @since 0.1.0
  * @category constructors
  */
 const createBuilderLens = <A, K extends keyof A>(key: K): BuilderLens<A>[K] => {
@@ -121,7 +121,7 @@ const createBuilderLens = <A, K extends keyof A>(key: K): BuilderLens<A>[K] => {
 /**
  * Creates a builder lens for each field in the schema
  *
- * @since 0.3.0
+ * @since 0.1.0
  * @category constructors
  */
 export const createBuilderLenses = <A>(
@@ -139,7 +139,7 @@ export const createBuilderLenses = <A>(
 /**
  * Gets default values from schema annotations recursively
  *
- * @since 0.3.0
+ * @since 0.1.0
  * @category constructors
  */
 const getSchemaDefaults = <A, F extends Schema.Struct.Fields>(
@@ -238,7 +238,7 @@ export const define = <F extends Schema.Struct.Fields>(
  * @category combinators
  * @example
  * import { Schema, Effect, pipe } from "effect"
- * import { define, compose } from "@ye/domain/primitives"
+ * import { define, compose } from "@ye/domain/kernel"
  *
  * const UserSchema = Schema.Struct({
  *   name: Schema.String,

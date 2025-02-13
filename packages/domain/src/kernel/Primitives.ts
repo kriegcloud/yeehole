@@ -10,7 +10,7 @@ import * as S from "effect/Schema";
  * @since 0.1.0
  */
 export namespace Primitives {
-  export const Str = Primitive.make(S.String);
+  export const Str = Primitive.make(S.String.pipe(S.brand("@ye/domain/kernel/Primitives/Str")));
   /**
    * @category Primitives
    * @since 0.1.0
@@ -21,7 +21,7 @@ export namespace Primitives {
     {
       arbitrary: () => (fc) => fc.string().filter((s) => s.length > 0),
     }
-  ));
+  ))
   export type NonEmptyStr = typeof NonEmptyStr.Type;
 
   export const NonEmptyTrimStr = Primitive.make(S.NonEmptyTrimmedString.annotations(
@@ -37,7 +37,7 @@ export namespace Primitives {
   export const Url = Primitive.make(NonEmptyTrimStr.pipe(S.pattern(/^(http|https):\/\/[^ "]+$/)));
   export type Url = typeof Url.Type;
 
-  export const Num = Primitive.make(S.Number);
+  export const Num = Primitive.make(S.Number).pipe(S.brand("@ye/domain/kernel/Primitives/Num"));
   export type Num = typeof Num.Type;
 
   export const PosNum = Primitive.make(S.Number.pipe(S.positive()));
@@ -55,7 +55,7 @@ export namespace Primitives {
   export const NegInt = Primitive.make(S.Int.pipe(S.negative()));
   export type NegInt = typeof NegInt.Type;
 
-  export const Bool = Primitive.make(S.Boolean);
+  export const Bool = Primitive.make(S.Boolean).pipe(S.brand("@ye/domain/kernel/Primitives/Bool"));
   export type Bool = typeof Bool.Type;
 
   export const Date = Primitive.make(S.Date);
@@ -110,7 +110,8 @@ export namespace Primitives {
   }));
   export type LowerCaseStr = typeof LowerCaseStr.Type;
 
-
+  export const Null = Primitive.make(S.Null).pipe(S.brand("@ye/domain/kernel/Primitives/Null"));
+  export type Null = typeof Null.Type;
 
   export const FileFromSelf = Primitive.make(S.declare(
     (input: unknown): input is File => input instanceof File,
@@ -123,4 +124,29 @@ export namespace Primitives {
     }
   ));
   export type FileFromSelf = typeof FileFromSelf.Type;
+
+  export const JsonLiteral = S.Union(S.String, S.Number, S.Boolean, S.Null)
+  export type JsonType =
+    | string
+    | number
+    | boolean
+    | {
+    [key: string]: JsonType
+  }
+    | JsonType[]
+    | readonly JsonType[]
+    | null
+
+  export const Json = Primitive.make(S.suspend(
+    (): S.Schema<JsonType> =>
+      S.Union(
+        JsonLiteral, JSONArray, JSONRecord
+      ),
+  ));
+  export const JSONArray = S.Union(
+    S.mutable(S.Array(Json)),
+    S.Array(Json)
+  )
+
+  export const JSONRecord = S.Record({key: S.String, value: Json})
 }
