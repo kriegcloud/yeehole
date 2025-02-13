@@ -33,7 +33,8 @@
     "codegen": "build-utils prepare-v2",
     "coverage": "vitest --coverage",
     "dtslint": "dtslint dtslint",
-    "test": "vitest"
+    "test": "vitest",
+    "exec:scratch": "tsx ./src/kernel/Brand.ts"
   },
   "type": "module"
 }
