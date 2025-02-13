@@ -4,6 +4,6 @@
   "references": [
     { "path": "packages/domain" },
     { "path": "packages/env" },
-    { "path": "packages/demo" }
+    { "path": "packages/lib"}
   ]
 }

@@ -1,9 +1,13 @@
 {
-  "name": "@ye/demo",
+  "name": "@ye/lib",
   "description": "The domain package for YeetUnion",
   "version": "0.1.0",
   "bugs": "https://github.com/kriegcloud/yeet-union/issues",
+  "peerDependencies": {
+    "react": "^18.3.1"
+  },
   "dependencies": {
+    "@tanstack/react-query": "^5.66.0",
     "effect": "latest"
   },
   "homepage": "https://yeetunion.com",
@@ -34,6 +38,7 @@
   },
   "type": "module",
   "devDependencies": {
-    "@types/bun": "^1.2.2"
+    "@types/bun": "^1.2.2",
+    "@types/react": "^18.3.12"
   }
 }

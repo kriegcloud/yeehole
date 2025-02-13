@@ -6,7 +6,7 @@
       "path": "packages/domain/tsconfig.build.json"
     },
     {
-      "path": "packages/demo/tsconfig.build.json"
+      "path": "packages/lib/tsconfig.build.json"
     },
     {
       "path": "packages/env/tsconfig.build.json"

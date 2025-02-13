@@ -9,13 +9,10 @@ type JsonType =
   | string
   | number
   | boolean
-  | {
-  [key: string]: JsonType
-}
+  | { [key: string]: JsonType }
   | JsonType[]
   | readonly JsonType[]
   | null
-
 
 
 export const Json = S.suspend(

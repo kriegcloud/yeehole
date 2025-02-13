@@ -5,6 +5,7 @@
     "moduleDetection": "force",
     "composite": true,
     "downlevelIteration": true,
+    "jsx": "preserve",
     "resolveJsonModule": true,
     "esModuleInterop": false,
     "declaration": true,

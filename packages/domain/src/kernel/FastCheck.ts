@@ -5,7 +5,7 @@ type FC = typeof fc
 
 export type { FC }
 
-export const ALPHABET = "abcdefghijklmnopqrstuvwxyz"
+export const ALPHABET = `abcdefghijklmnopqrstuvwxyz`
 export const ALPHABET_UC = ALPHABET.toUpperCase()
 
 // uppercase A-Z
