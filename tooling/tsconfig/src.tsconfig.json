@@ -5,9 +5,6 @@
     "types": ["node"],
     "outDir": "${configDir}/build/src",
     "tsBuildInfoFile": "${configDir}/.tsbuildinfo/src.tsbuildinfo",
-    "rootDir": "${configDir}/src",
-    "paths": {
-      "#/*": ["${configDir}/src/*"]
-    }
+    "rootDir": "${configDir}/src"
   }
 }

@@ -1,5 +1,5 @@
 {
-  "extends": "./src.tsconfig.json",
+  "extends": "./base.tsconfig.json",
   "compilerOptions": {
     "types": ["node"],
     "tsBuildInfoFile": "${configDir}/.tsbuildinfo/build.tsbuildinfo",

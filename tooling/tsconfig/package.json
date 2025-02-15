@@ -11,7 +11,9 @@
     "src.tsconfig.json",
     "build.tsconfig.json",
     "test.tsconfig.json",
-    "scripts.tsconfig.json"
+    "scripts.tsconfig.json",
+    "schema.json",
+    "docgen.tsconfig.json"
   ],
   "publishConfig": {
     "access": "public"

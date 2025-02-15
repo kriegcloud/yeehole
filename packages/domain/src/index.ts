@@ -1,5 +1,5 @@
 /**
  * @since 0.1.0
- *
+ * @category beep
  */
-export * from "./beep.js"
+export * as beep from "./beep.js"

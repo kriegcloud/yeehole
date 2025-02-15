@@ -9,7 +9,7 @@
   },
   "homepage": "https://yeetunion.com",
   "imports": {
-    "#*": "./src/*"
+    "#/*": "./src/*"
   },
   "license": "MIT",
   "publishConfig": {
@@ -35,7 +35,8 @@
     "exec:scratch": "tsx ./src/kernel/execute.ts"
   },
   "devDependencies": {
-    "@effect/docgen": "latest"
+    "@effect/docgen": "latest",
+    "@ye/tsconfig": "workspace:^"
   },
   "type": "module"
 }
