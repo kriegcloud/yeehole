@@ -1,48 +1,31 @@
 {
-  "name": "@ye/domain",
-  "description": "The domain package for YeetUnion",
+  "name": "@ye/build-util",
   "version": "0.1.0",
-  "bugs": "https://github.com/kriegcloud/yeet-union/issues",
-  "homepage": "https://yeetunion.com",
-  "imports": {
-    "#*": "./src/*"
-  },
-  "license": "MIT",
-  "publishConfig": {
-    "access": "restricted",
-    "directory": "dist",
-    "provenance": true
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/kriegcloud/yeet-union",
-    "directory": "packages/domain"
+  "description": "Custom utilities used to assist with building and packaging Effect libraries",
+  "scripts": {
+    "version": "changeset version && bun install",
+    "release": "bun run build && changeset publish",
+    "lint": "eslint . --ext .ts,.tsx",
+    "autofix": "bun lint --fix",
+    "vitest": "vitest",
+    "coverage": "vitest run --coverage",
+    "test": "pnpm coverage",
+    "clean": "rimraf rm -rf dist/*",
+    "build": "tsup && pnpm copy-package-json",
+    "build:ts": "tsup",
+    "copy-package-json": "ts-node scripts/cpy-pkg-json.ts"
   },
   "devDependencies": {
     "@effect/cli": "latest",
+    "@effect/eslint-plugin": "latest",
     "@effect/platform": "latest",
-    "effect": "latest",
     "@effect/platform-node": "latest",
-    "@effect/schema": "latest",
     "@types/doctrine": "latest",
     "@types/fs-extra": "latest",
     "@types/glob": "latest",
+    "effect": "latest",
+    "glob": "latest",
     "ts-node": "latest",
-    "tsup": "latest",
-    "typescript": "latest"
-  },
-  "scripts": {
-    "version": "changeset version && bun i",
-    "release": "bun run build && changeset publish",
-    "check": "tsc -b tsconfig.json",
-    "codegen": "build-utils prepare-v2",
-    "coverage": "vitest --coverage",
-    "dtslint": "dtslint dtslint",
-    "test": "vitest",
-    "build": "tsup && pnpm copy-package-json",
-    "copy-package-json": "ts-node scripts/copy-package-json.ts",
-    "build:ts": "tsup",
-    "exec:scratch": "tsx ./src/kernel/Brand.ts"
-  },
-  "type": "module"
+    "tsup": "latest"
+  }
 }

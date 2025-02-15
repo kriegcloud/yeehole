@@ -4,9 +4,7 @@
   "version": "0.1.0",
   "bugs": "https://github.com/kriegcloud/yeet-union/issues",
   "dependencies": {
-    "@faker-js/faker": "^9.4.0",
     "@standard-schema/spec": "^1.0.0",
-    "any-ts": "^0.48.1",
     "effect": "latest"
   },
   "homepage": "https://yeetunion.com",
@@ -34,7 +32,10 @@
     "coverage": "vitest --coverage",
     "dtslint": "dtslint dtslint",
     "test": "vitest",
-    "exec:scratch": "tsx ./src/kernel/Brand.ts"
+    "exec:scratch": "tsx ./src/kernel/execute.ts"
+  },
+  "devDependencies": {
+    "@effect/docgen": "latest"
   },
   "type": "module"
 }

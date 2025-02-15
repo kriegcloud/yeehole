@@ -1,0 +1,13 @@
+{
+  "extends": "./base.tsconfig.json",
+  "include": ["${configDir}/test"],
+  "compilerOptions": {
+    "types": ["node"],
+    "tsBuildInfoFile": "${configDir}/.tsbuildinfo/test.tsbuildinfo",
+    "rootDir": "${configDir}/test",
+    "outDir": "${configDir}/build/test",
+    "paths": {
+      "#/*": ["${configDir}/src/*"]
+    }
+  }
+}

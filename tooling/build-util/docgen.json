@@ -1,0 +1,28 @@
+{
+  "exclude": ["src/internal_effect_untraced/**/*.ts"],
+  "theme": "mikearnaldi/just-the-docs",
+  "parseCompilerOptions": {
+    "strict": true,
+    "noEmit": true,
+    "target": "ES2021",
+    "lib": ["ES2021"],
+    "paths": {
+      "@ye/build-util": ["./src/index.ts"],
+      "@ye/build-util/test/*": ["./test/*"],
+      "@ye/build-util/examples/*": ["./examples/*"],
+      "@ye/build-util/*": ["./src/*"]
+    }
+  },
+  "examplesCompilerOptions": {
+    "strict": true,
+    "noEmit": true,
+    "target": "ES2021",
+    "lib": ["ES2021"],
+    "paths": {
+      "@ye/build-util": ["../../src/index.ts"],
+      "@ye/build-util/test/*": ["../../test/*"],
+      "@ye/build-util/examples/*": ["../../examples/*"],
+      "@ye/build-util/*": ["../../src/*"]
+    }
+  }
+}

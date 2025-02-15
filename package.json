@@ -6,6 +6,7 @@
       "@changesets/get-github-info@0.6.0": "patches/@changesets__get-github-info@0.6.0.patch"
     }
   },
+  "packageManager": "bun@1.1.10",
   "devDependencies": {
     "@babel/cli": "^7.26.4",
     "@babel/core": "^7.25.2",
@@ -15,8 +16,7 @@
     "@changesets/changelog-github": "^0.5.0",
     "@changesets/cli": "^2.27.7",
     "@edge-runtime/vm": "^4.0.0",
-    "@effect/build-utils": "latest",
-    "@effect/docgen": "latest",
+    "@ye/build-util": "workspace:^",
     "@effect/dtslint": "latest",
     "@effect/language-service": "latest",
     "@effect/vitest": "latest",
@@ -36,9 +36,11 @@
     "rimraf": "^6.0.1",
     "syncpack": "^13.0.2",
     "tsx": "^4.19.2",
-    "turbo": "^2.4.1",
+    "turbo": "^2.4.2",
     "typescript": "^5.7.3",
     "vite": "^6.1.0",
+    "@ye/tsconfig": "workspace:^",
+    "@effect/docgen": "latest",
     "vitest": "^3.0.5"
   },
   "private": true,
@@ -55,10 +57,12 @@
     "detective-typescript": "^11.1.0"
   },
   "scripts": {
-    "build": "tsc -b tsconfig.build.json && bun --filter='*' --parallel run build",
+    "pre-build": "bun run turbo build --filter @ye/build-util",
+    "preinstall": "",
+    "build": "bun run pre-build && turbo run check build",
     "changeset-publish": "bun codemod && bun lint-fix && bun build && TEST_DIST= bun vitest && changeset publish",
     "changeset-version": "changeset version && node scripts/version.mjs",
-    "check": "tsc -b tsconfig.json",
+    "check": "bun turbo run check",
     "check-recursive": "bun --filter='*' exec tsc -b tsconfig.json",
     "circular": "node scripts/circular.mjs",
     "clean": "node scripts/clean.mjs",
@@ -68,14 +72,13 @@
     "docgen": "node scripts/docgen.mjs && node scripts/docs.mjs",
     "dtslint": "node scripts/dtslint.mjs",
     "dtslint-clean": "dtslint --clean",
-    "lint": "biome check .",
-    "lint-fix": "bun lint --write",
-    "lint-pkgs": "syncpack lint",
-    "lint-pkgs-fix": "syncpack format",
+    "lint": "biome check . && syncpack lint",
+    "lint:fix": "bun lint --write && syncpack format",
     "test": "vitest"
   },
   "type": "module",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "tooling/*"
   ]
 }

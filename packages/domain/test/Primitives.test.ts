@@ -1,8 +1,8 @@
 import { describe, expect, it } from "@effect/vitest";
-// import { Primitives } from "#kernel/Primitives.js";
+import { beep } from "#/beep.js";
 
 describe("Demo", () => {
   it("should be beep", () => {
-    expect("BEEP").toBe("BEEP");
+    expect(beep()).toBe("beep");
   });
 });
