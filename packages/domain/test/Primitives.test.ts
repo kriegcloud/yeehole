@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@effect/vitest";
-import { beep } from "#/beep.js";
+import { beep } from "../src/beep.js";
 
 describe("Demo", () => {
   it("should be beep", () => {

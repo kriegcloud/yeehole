@@ -1,5 +1,5 @@
 
-[0m[2m[35m$[0m [2m[1mtsup && pnpm copy-package-json[0m
+[0m[2m[35m$[0m [2m[1mtsup && bun copy-package-json[0m
 [34mCLI[39m Building entry: src/main.ts
 [34mCLI[39m Using tsconfig: tsconfig.json
 [34mCLI[39m tsup v8.3.6
@@ -9,9 +9,6 @@
 [34mCJS[39m Build start
 "Readable" is imported from external module "stream" but never used in "dist/main.js".
 [32mCJS[39m [1mdist/main.js [22m[32m1.19 MB[39m
-[32mCJS[39m ⚡️ Build success in 1531ms
-
-> @ye/build-util@0.1.0 copy-package-json /home/elpresidank/YeeBois/projects/yeehole/tooling/build-util
-> ts-node scripts/cpy-pkg-json.ts
-
+[32mCJS[39m ⚡️ Build success in 1644ms
+[0m[2m[35m$[0m [2m[1mts-node scripts/cpy-pkg-json.ts[0m
 copying package.json to dist/package.json...

@@ -9,9 +9,8 @@
     "autofix": "bun lint --fix",
     "vitest": "vitest",
     "coverage": "vitest run --coverage",
-    "test": "pnpm coverage",
     "clean": "rimraf rm -rf dist/*",
-    "build": "tsup && pnpm copy-package-json",
+    "build": "tsup && bun copy-package-json",
     "build:ts": "tsup",
     "copy-package-json": "ts-node scripts/cpy-pkg-json.ts"
   },

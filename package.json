@@ -74,7 +74,7 @@
     "dtslint-clean": "dtslint --clean",
     "lint": "biome check . && syncpack lint",
     "lint:fix": "bun lint --write && syncpack format",
-    "test": "vitest"
+    "test": "bun turbo test"
   },
   "type": "module",
   "workspaces": [

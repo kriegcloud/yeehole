@@ -83,6 +83,32 @@
         ".env.development",
         ".env"
       ]
+    },
+    "test:e2e": {
+      "dependsOn": ["^build", "build"],
+      "outputs": ["playwright-report/**", "test-results/**"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "!CHANGELOG.md",
+        "!.env.example",
+        ".env.test.local",
+        ".env.local",
+        ".env.test",
+        ".env"
+      ]
+    },
+    "test": {
+      "dependsOn": ["^build", "build"],
+      "outputs": ["playwright-report/**", "test-results/**"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "!CHANGELOG.md",
+        "!.env.example",
+        ".env.test.local",
+        ".env.local",
+        ".env.test",
+        ".env"
+      ]
     }
   }
 }
