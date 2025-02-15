@@ -65,7 +65,7 @@
     "check": "bun turbo run check",
     "check-recursive": "bun --filter='*' exec tsc -b tsconfig.json",
     "circular": "node scripts/circular.mjs",
-    "clean": "bun run turbo clean",
+    "clean": "turbo clean && rimraf rm -rf tsconfig.tsbuildinfo node_modules .turbo",
     "codegen": "bun --filter='*' --parallel run codegen",
     "codemod": "node scripts/codemod.mjs",
     "coverage": "vitest --coverage",
