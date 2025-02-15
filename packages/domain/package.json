@@ -9,6 +9,8 @@
   },
   "devDependencies": {
     "@effect/docgen": "latest",
+    "@effect/build-utils": "latest",
+    "@ye/build-util": "workspace:^",
     "@ye/tsconfig": "workspace:^"
   },
   "homepage": "https://yeetunion.com",
