@@ -9,7 +9,7 @@
     "autofix": "bun lint --fix",
     "vitest": "vitest",
     "coverage": "vitest run --coverage",
-    "clean": "rimraf rm -rf dist/*",
+    "clean": "rimraf rm -rf dist/* coverage/* .turbo",
     "build": "tsup && bun copy-package-json",
     "build:ts": "tsup",
     "copy-package-json": "ts-node scripts/cpy-pkg-json.ts"
@@ -24,6 +24,7 @@
     "@types/glob": "latest",
     "effect": "latest",
     "glob": "latest",
+    "rimraf": "^6.0.1",
     "ts-node": "latest",
     "tsup": "latest"
   }

@@ -1,7 +1,0 @@
-
-[0m[2m[35m$[0m [2m[1mbun build-esm && bun build-annotate && bun build-cjs && build-utils pack-v2[0m
-[0m[2m[35m$[0m [2m[1mtsc -b tsconfig.build.json[0m
-[0m[2m[35m$[0m [2m[1mbabel build/esm --plugins annotate-pure-calls --out-dir build/esm --source-maps[0m
-Successfully compiled 9 files with Babel (124ms).
-[0m[2m[35m$[0m [2m[1mbabel build/esm --plugins @babel/transform-export-namespace-from --plugins @babel/transform-modules-commonjs --out-dir build/cjs --source-maps[0m
-Successfully compiled 9 files with Babel (158ms).
