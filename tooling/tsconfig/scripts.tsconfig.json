@@ -1,9 +1,6 @@
 {
   "extends": "base.tsconfig.json",
-  "include": [
-    "${configDir}/src",
-    "${configDir}/scripts"
-  ],
+  "include": ["${configDir}/src", "${configDir}/scripts"],
   "compilerOptions": {
     "tsBuildInfoFile": "${configDir}/.tsbuildinfo/scripts.tsbuildinfo",
     "rootDir": "${configDir}",

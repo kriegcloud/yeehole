@@ -1,13 +1,13 @@
-import * as NodeFileSystem from "@effect/platform-node/NodeFileSystem"
-import * as NodePath from "@effect/platform-node/NodePath"
-import { FileSystem } from "@effect/platform/FileSystem"
-import { Path } from "@effect/platform/Path"
-import * as Schema from "@effect/schema/Schema"
-import * as Array from "effect/Array"
-import * as Effect from "effect/Effect"
-import * as Layer from "effect/Layer"
-import * as Option from "effect/Option"
-import { FsUtils, FsUtilsLive } from "./FsUtils"
+import * as NodeFileSystem from "@effect/platform-node/NodeFileSystem";
+import * as NodePath from "@effect/platform-node/NodePath";
+import { FileSystem } from "@effect/platform/FileSystem";
+import { Path } from "@effect/platform/Path";
+import * as Schema from "@effect/schema/Schema";
+import * as Array from "effect/Array";
+import * as Effect from "effect/Effect";
+import * as Layer from "effect/Layer";
+import * as Option from "effect/Option";
+import { FsUtils, FsUtilsLive } from "./FsUtils";
 
 const defaultGitignoreTemplate = `coverage/
 *.tsbuildinfo
@@ -17,80 +17,84 @@ node_modules/
 tmp/
 build/
 dist/
-.direnv/`
+.direnv/`;
 
-export const run = Effect.gen(function*(_) {
-  const fs = yield* _(FileSystem)
-  const path_ = yield* _(Path)
-  const fsUtils = yield* _(FsUtils)
+export const run = Effect.gen(function* (_) {
+  const fs = yield* _(FileSystem);
+  const path_ = yield* _(Path);
+  const fsUtils = yield* _(FsUtils);
 
-  const topPackageJsonRaw = yield* _(fsUtils.readJson("./package.json"))
-  const topPackageJson = yield* _(PackageJson.decode(topPackageJsonRaw))
+  const topPackageJsonRaw = yield* _(fsUtils.readJson("./package.json"));
+  const topPackageJson = yield* _(PackageJson.decode(topPackageJsonRaw));
 
   const tsConfig = yield* _(
     fsUtils.readJson("./tsconfig.dist.json"),
     Effect.orElse(() =>
       fsUtils.readJson("./tsconfig.base.json").pipe(
         Effect.orElse(() => fsUtils.readJson("./tsconfig.json")),
-        Effect.map(config => {
-          delete config.extends
-          delete config.exclude
-          delete config.compilerOptions.outDir
-          delete config.compilerOptions.baseUrl
-          delete config.compilerOptions.rootDir
-          delete config.compilerOptions.paths
-          delete config.compilerOptions.tsBuildInfoFile
-          delete config.compilerOptions.composite
-          delete config.compilerOptions.declaration
-          delete config.compilerOptions.declarationMap
-          delete config.compilerOptions.plugins
-          delete config.compilerOptions.types
-          delete config.compilerOptions.noErrorTruncation
-          config.compilerOptions.skipLibCheck = true
-          config.include = ["**/*"]
-          return config
+        Effect.map((config) => {
+          delete config.extends;
+          delete config.exclude;
+          delete config.compilerOptions.outDir;
+          delete config.compilerOptions.baseUrl;
+          delete config.compilerOptions.rootDir;
+          delete config.compilerOptions.paths;
+          delete config.compilerOptions.tsBuildInfoFile;
+          delete config.compilerOptions.composite;
+          delete config.compilerOptions.declaration;
+          delete config.compilerOptions.declarationMap;
+          delete config.compilerOptions.plugins;
+          delete config.compilerOptions.types;
+          delete config.compilerOptions.noErrorTruncation;
+          config.compilerOptions.skipLibCheck = true;
+          config.include = ["**/*"];
+          return config;
         }),
-      )
+      ),
     ),
-  )
+  );
 
   const gitIgnoreTemplate = yield* _(
     fs.readFileString("./.gitignore.template"),
     Effect.orElseSucceed(() => defaultGitignoreTemplate),
-  )
+  );
 
-  const packages = yield* _(topPackageJson.packages)
+  const packages = yield* _(topPackageJson.packages);
 
   const processPackage = (dir: string) =>
-    Effect.gen(function*(_) {
-      const pkgRaw = dir === "."
-        ? topPackageJsonRaw
-        : yield* _(fsUtils.readJson(path_.join(dir, "package.json")))
-      const pkg = dir === "."
-        ? topPackageJson
-        : yield* _(PackageJson.decode(pkgRaw))
-      const config = pkg.effect
-      const exportPrefix = slugify(pkg.name)
-      const entrypoints = yield* _(fsUtils.glob(pkg.preconstruct.entrypoints, {
-        nodir: true,
-        cwd: path_.join(dir, "src"),
-      }))
-      const modules = entrypoints.filter(_ => _ !== "index.ts").map(_ =>
-        _.replace(/\.tsx?$/, "")
-      ).sort()
+    Effect.gen(function* (_) {
+      const pkgRaw =
+        dir === "."
+          ? topPackageJsonRaw
+          : yield* _(fsUtils.readJson(path_.join(dir, "package.json")));
+      const pkg =
+        dir === "." ? topPackageJson : yield* _(PackageJson.decode(pkgRaw));
+      const config = pkg.effect;
+      const exportPrefix = slugify(pkg.name);
+      const entrypoints = yield* _(
+        fsUtils.glob(pkg.preconstruct.entrypoints, {
+          nodir: true,
+          cwd: path_.join(dir, "src"),
+        }),
+      );
+      const modules = entrypoints
+        .filter((_) => _ !== "index.ts")
+        .map((_) => _.replace(/\.tsx?$/, ""))
+        .sort();
       const files = [
         "dist",
         ...(config.includeInternal ? ["internal"] : []),
         ...modules
           .reduce((acc: Array<string>, file) => {
-            const topLevel = file.split("/")[0]
+            const topLevel = file.split("/")[0];
             if (!acc.includes(topLevel)) {
-              acc.push(topLevel)
+              acc.push(topLevel);
             }
-            return acc
+            return acc;
           }, [])
           .sort(),
-      ]
+      ];
+      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
       const exports: Record<string, any> = {
         ".": {
           types: "./dist/declarations/src/index.d.ts",
@@ -99,25 +103,25 @@ export const run = Effect.gen(function*(_) {
           default: `./dist/${exportPrefix}.cjs.js`,
         },
         "./package.json": "./package.json",
-      }
-      modules.forEach(module => {
-        const moduleSafe = slugify(module)
+      };
+      modules.forEach((module) => {
+        const moduleSafe = slugify(module);
         exports[`./${module}`] = {
           types: `./dist/declarations/src/${module}.d.ts`,
           module: `./${module}/dist/${exportPrefix}-${moduleSafe}.esm.js`,
           import: `./${module}/dist/${exportPrefix}-${moduleSafe}.cjs.mjs`,
           default: `./${module}/dist/${exportPrefix}-${moduleSafe}.cjs.js`,
-        }
-      })
+        };
+      });
       const gitignore = `${gitIgnoreTemplate}
 
 # files
 /src/tsconfig.json
-${files.map(_ => `/${_}`).join("\n")}
-`
+${files.map((_) => `/${_}`).join("\n")}
+`;
       const vscodeIgnore = Object.fromEntries(
-        files.map(_ => [path_.join(dir, _), true]),
-      )
+        files.map((_) => [path_.join(dir, _), true]),
+      );
 
       return {
         pkg: {
@@ -129,110 +133,105 @@ ${files.map(_ => `/${_}`).join("\n")}
         modules,
         gitignore,
         vscodeIgnore,
-      } as const
-    })
+      } as const;
+    });
 
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface PkgInfo
-    extends Effect.Effect.Success<ReturnType<typeof processPackage>>
-  {}
+    extends Effect.Effect.Success<ReturnType<typeof processPackage>> {}
 
   const genIndex = (
     dir: string,
     pkgName: string,
     modules: ReadonlyArray<string>,
   ) =>
-    Effect.gen(function*(_) {
+    Effect.gen(function* (_) {
       const template = yield* _(
         fs.readFileString(path_.join(dir, "src/.index.ts")),
-        Effect.map(_ => `${_.trim()}\n\n`),
+        Effect.map((_) => `${_.trim()}\n\n`),
         Effect.orElseSucceed(() => ""),
-      )
+      );
       const content = yield* _(
         Effect.forEach(
-          modules.filter(_ => !_.includes("/")),
-          module =>
+          modules.filter((_) => !_.includes("/")),
+          (module) =>
             Effect.map(
               fs.readFileString(path_.join(dir, "src", `${module}.ts`)),
-              content => {
-                const topComment = content.match(/\/\*\*\n.+?\*\//s)?.[0] ?? ""
+              (content) => {
+                const topComment = content.match(/\/\*\*\n.+?\*\//s)?.[0] ?? "";
                 return `${topComment}
-export * as ${module} from "${pkgName}/${module}"`
+export * as ${module} from "${pkgName}/${module}"`;
               },
             ),
           { concurrency: "inherit" },
         ),
-      )
-      return `${template}${content.join("\n\n")}\n`
-    })
+      );
+      return `${template}${content.join("\n\n")}\n`;
+    });
 
   const handlePkgInfo = (
     dir: string,
     { config, gitignore, modules, pkg }: PkgInfo,
   ) =>
-    Effect.all([
-      fsUtils.writeJson(path_.join(dir, "package.json"), pkg).pipe(
-        Effect.uninterruptible,
-      ),
-      fs.writeFileString(path_.join(dir, ".gitignore"), gitignore).pipe(
-        Effect.uninterruptible,
-      ),
-      config.generateIndex
-        ? Effect.flatMap(
-          genIndex(dir, pkg.name, modules),
-          content =>
-            fs.writeFileString(path_.join(dir, "src/index.ts"), content),
-        )
-        : Effect.void,
-      fsUtils.writeJson(path_.join(dir, "src/tsconfig.json"), {
-        ...tsConfig,
-        compilerOptions: {
-          ...tsConfig.compilerOptions,
-          paths: {
-            [pkg.name]: ["./index.ts"],
-            [`${pkg.name}/*`]: ["./*.ts"],
-          },
-        },
-      }).pipe(
-        Effect.uninterruptible,
-      ),
-    ], { concurrency: "inherit", discard: true })
+    Effect.all(
+      [
+        fsUtils
+          .writeJson(path_.join(dir, "package.json"), pkg)
+          .pipe(Effect.uninterruptible),
+        fs
+          .writeFileString(path_.join(dir, ".gitignore"), gitignore)
+          .pipe(Effect.uninterruptible),
+        config.generateIndex
+          ? Effect.flatMap(genIndex(dir, pkg.name, modules), (content) =>
+              fs.writeFileString(path_.join(dir, "src/index.ts"), content),
+            )
+          : Effect.void,
+        fsUtils
+          .writeJson(path_.join(dir, "src/tsconfig.json"), {
+            ...tsConfig,
+            compilerOptions: {
+              ...tsConfig.compilerOptions,
+              paths: {
+                [pkg.name]: ["./index.ts"],
+                [`${pkg.name}/*`]: ["./*.ts"],
+              },
+            },
+          })
+          .pipe(Effect.uninterruptible),
+      ],
+      { concurrency: "inherit", discard: true },
+    );
 
   const updateVscodeSettings = (ignore: Record<string, boolean>) =>
     fsUtils.readJson("./.vscode/settings.json").pipe(
-      Effect.flatMap(settings =>
+      Effect.flatMap((settings) =>
         fsUtils.writeJson("./.vscode/settings.json", {
           ...settings,
           ["files.exclude"]: ignore,
-        })
+        }),
       ),
-    )
+    );
 
   yield* _(
-    Effect.forEach(packages, dir =>
-      Effect.tap(
-        processPackage(dir),
-        info => handlePkgInfo(dir, info),
-      ), { concurrency: "inherit" }),
-    Effect.tap(infos =>
+    Effect.forEach(
+      packages,
+      (dir) =>
+        Effect.tap(processPackage(dir), (info) => handlePkgInfo(dir, info)),
+      { concurrency: "inherit" },
+    ),
+    Effect.tap((infos) =>
       updateVscodeSettings(
-        Array.reduce(
-          infos,
-          {},
-          (a, b) => ({ ...a, ...b.vscodeIgnore }),
-        ),
-      ).pipe(
-        Effect.ignore,
-      )
+        Array.reduce(infos, {}, (a, b) => ({ ...a, ...b.vscodeIgnore })),
+      ).pipe(Effect.ignore),
     ),
     Effect.withConcurrency(10),
     Effect.awaitAllChildren,
-  )
+  );
 }).pipe(
   Effect.provide(
     Layer.mergeAll(FsUtilsLive, NodeFileSystem.layer, NodePath.layerPosix),
   ),
-)
+);
 
 class EffectConfig extends Schema.Class<EffectConfig>("EffectConfig")({
   generateIndex: Schema.optionalWith(Schema.Boolean, { default: () => false }),
@@ -243,7 +242,7 @@ class EffectConfig extends Schema.Class<EffectConfig>("EffectConfig")({
   static readonly default = new EffectConfig({
     generateIndex: false,
     includeInternal: false,
-  })
+  });
 }
 
 class PackageJson extends Schema.Class<PackageJson>("PackageJson")({
@@ -260,18 +259,18 @@ class PackageJson extends Schema.Class<PackageJson>("PackageJson")({
     default: () => EffectConfig.default,
   }),
 }) {
-  static readonly decode = Schema.decodeUnknown(this)
+  static readonly decode = Schema.decodeUnknown(this);
 
   get packages(): Effect.Effect<Array<string>, Error, FsUtils> {
     return Option.match(this.preconstruct.packages, {
       onNone: () => Effect.succeed(["."]),
-      onSome: globs => Effect.flatMap(FsUtils, fs => fs.glob(globs)),
-    })
+      onSome: (globs) => Effect.flatMap(FsUtils, (fs) => fs.glob(globs)),
+    });
   }
 }
 
 // helpers
 
 function slugify(str: string) {
-  return str.replace(/^@/g, "").replace(/\//g, "-")
+  return str.replace(/^@/g, "").replace(/\//g, "-");
 }

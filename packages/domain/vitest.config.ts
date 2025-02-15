@@ -1,6 +1,5 @@
-import { type ViteUserConfig, mergeConfig } from "vitest/config";
 import * as path from "node:path";
-
+import { type ViteUserConfig, mergeConfig } from "vitest/config";
 
 const alias = (pkg: string, dir = pkg) => {
   const name = `@ye/${pkg}`;
@@ -35,7 +34,6 @@ const shared: ViteUserConfig = {
     },
   },
 };
-
 
 const config: ViteUserConfig = {
   test: {

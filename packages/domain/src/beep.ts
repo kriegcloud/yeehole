@@ -3,5 +3,5 @@
  * @category beep
  */
 export const beep = () => {
-  return 'beep';
-}
+  return "beep";
+};

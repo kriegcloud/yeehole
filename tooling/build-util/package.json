@@ -1,19 +1,7 @@
 {
   "name": "@ye/build-util",
-  "version": "0.1.0",
   "description": "Custom utilities used to assist with building and packaging Effect libraries",
-  "scripts": {
-    "version": "changeset version && bun install",
-    "release": "bun run build && changeset publish",
-    "lint": "eslint . --ext .ts,.tsx",
-    "autofix": "bun lint --fix",
-    "vitest": "vitest",
-    "coverage": "vitest run --coverage",
-    "clean": "rimraf rm -rf dist/* coverage/* .turbo",
-    "build": "tsup && bun copy-package-json",
-    "build:ts": "tsup",
-    "copy-package-json": "ts-node scripts/cpy-pkg-json.ts"
-  },
+  "version": "0.1.0",
   "devDependencies": {
     "@effect/cli": "latest",
     "@effect/eslint-plugin": "latest",
@@ -27,5 +15,17 @@
     "rimraf": "^6.0.1",
     "ts-node": "latest",
     "tsup": "latest"
+  },
+  "scripts": {
+    "autofix": "bun lint --fix",
+    "build": "tsup && bun copy-package-json",
+    "build:ts": "tsup",
+    "clean": "rimraf rm -rf dist/* coverage/* .turbo",
+    "copy-package-json": "ts-node scripts/cpy-pkg-json.ts",
+    "coverage": "vitest run --coverage",
+    "lint": "eslint . --ext .ts,.tsx",
+    "release": "bun run build && changeset publish",
+    "version": "changeset version && bun install",
+    "vitest": "vitest"
   }
 }

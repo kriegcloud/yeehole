@@ -7,6 +7,10 @@
     "@standard-schema/spec": "^1.0.0",
     "effect": "latest"
   },
+  "devDependencies": {
+    "@effect/docgen": "latest",
+    "@ye/tsconfig": "workspace:^"
+  },
   "homepage": "https://yeetunion.com",
   "imports": {
     "#/*": "./src/*"
@@ -31,12 +35,8 @@
     "codegen": "build-utils prepare-v2",
     "coverage": "vitest --coverage",
     "dtslint": "dtslint dtslint",
-    "test": "vitest",
-    "exec:scratch": "tsx ./src/kernel/execute.ts"
-  },
-  "devDependencies": {
-    "@effect/docgen": "latest",
-    "@ye/tsconfig": "workspace:^"
+    "exec:scratch": "tsx ./src/kernel/execute.ts",
+    "test": "vitest"
   },
   "type": "module"
 }

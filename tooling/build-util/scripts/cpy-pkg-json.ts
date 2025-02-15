@@ -1,13 +1,13 @@
-import * as NodeFileSystem from "@effect/platform-node/NodeFileSystem"
-import { FileSystem } from "@effect/platform/FileSystem"
-import { Effect, pipe } from "effect"
-import * as path from "node:path"
+import * as path from "node:path";
+import * as NodeFileSystem from "@effect/platform-node/NodeFileSystem";
+import { FileSystem } from "@effect/platform/FileSystem";
+import { Effect, pipe } from "effect";
 
 const read = pipe(
   FileSystem,
-  Effect.flatMap(fileSystem => fileSystem.readFileString("package.json")),
-  Effect.map(_ => JSON.parse(_)),
-  Effect.map(json => ({
+  Effect.flatMap((fileSystem) => fileSystem.readFileString("package.json")),
+  Effect.map((_) => JSON.parse(_)),
+  Effect.map((json) => ({
     name: json.name,
     version: json.version,
     description: json.description,
@@ -21,23 +21,23 @@ const read = pipe(
     tags: json.tags,
     keywords: json.keywords,
   })),
-)
+);
 
-const pathTo = path.join("dist", "package.json")
+const pathTo = path.join("dist", "package.json");
 
 const write = (pkg: object) =>
   pipe(
     FileSystem,
-    Effect.flatMap(fileSystem =>
-      fileSystem.writeFileString(pathTo, JSON.stringify(pkg, null, 2))
+    Effect.flatMap((fileSystem) =>
+      fileSystem.writeFileString(pathTo, JSON.stringify(pkg, null, 2)),
     ),
-  )
+  );
 
 const program = pipe(
   Effect.sync(() => console.log(`copying package.json to ${pathTo}...`)),
   Effect.flatMap(() => read),
   Effect.flatMap(write),
   Effect.provide(NodeFileSystem.layer),
-)
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);

@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
-import * as NodeFileSystem from "@effect/platform-node/NodeFileSystem"
-import { FileSystem } from "@effect/platform/FileSystem"
-import * as Schema from "@effect/schema/Schema"
-import * as Context from "effect/Context"
-import * as Effect from "effect/Effect"
-import * as Layer from "effect/Layer"
+import * as NodeFileSystem from "@effect/platform-node/NodeFileSystem";
+import { FileSystem } from "@effect/platform/FileSystem";
+import * as Schema from "@effect/schema/Schema";
+import * as Context from "effect/Context";
+import * as Effect from "effect/Effect";
+import * as Layer from "effect/Layer";
 
 const effectConfigDefaults = {
   generateExports: {
@@ -15,7 +15,7 @@ const effectConfigDefaults = {
     include: ["*.ts"],
     exclude: [],
   },
-}
+};
 export class EffectConfig extends Schema.Class<EffectConfig>("EffectConfig")({
   generateExports: Schema.optionalWith(
     Schema.Struct({
@@ -40,7 +40,7 @@ export class EffectConfig extends Schema.Class<EffectConfig>("EffectConfig")({
     { default: () => effectConfigDefaults.generateIndex },
   ),
 }) {
-  static readonly default = new EffectConfig(effectConfigDefaults)
+  static readonly default = new EffectConfig(effectConfigDefaults);
 }
 
 export class PackageJson extends Schema.Class<PackageJson>("PackageJson")({
@@ -48,10 +48,12 @@ export class PackageJson extends Schema.Class<PackageJson>("PackageJson")({
   version: Schema.String,
   description: Schema.String,
   private: Schema.optionalWith(Schema.Boolean, { default: () => false }),
-  publishConfig: Schema.optional(Schema.Struct({
-    provenance: Schema.optionalWith(Schema.Boolean, { default: () => false }),
-    executableFiles: Schema.optional(Schema.Array(Schema.String)),
-  })),
+  publishConfig: Schema.optional(
+    Schema.Struct({
+      provenance: Schema.optionalWith(Schema.Boolean, { default: () => false }),
+      executableFiles: Schema.optional(Schema.Array(Schema.String)),
+    }),
+  ),
   license: Schema.String,
   author: Schema.optional(
     Schema.Union(
@@ -96,52 +98,55 @@ export class PackageJson extends Schema.Class<PackageJson>("PackageJson")({
     default: () => EffectConfig.default,
   }),
 }) {
-  static readonly decode = Schema.decodeUnknown(this)
+  static readonly decode = Schema.decodeUnknown(this);
 }
 
-const make = Effect.gen(function*(_) {
-  const fs = yield* _(FileSystem)
+const make = Effect.gen(function* (_) {
+  const fs = yield* _(FileSystem);
 
   const packageJson = fs.readFileString("./package.json").pipe(
-    Effect.map(_ => JSON.parse(_)),
+    Effect.map((_) => JSON.parse(_)),
     Effect.flatMap(PackageJson.decode),
     Effect.withSpan("PackageContext/packageJson"),
-  )
+  );
 
-  const hasMainCjs = fs.exists("./build/cjs/index.js")
-  const hasMainMjs = fs.exists("./build/mjs/index.mjs")
-  const hasMainEsm = fs.exists("./build/esm/index.js")
-  const hasCjs = fs.exists("./build/cjs")
-  const hasMjs = fs.exists("./build/mjs")
-  const hasEsm = fs.exists("./build/esm")
-  const hasDts = fs.exists("./build/dts")
-  const hasSrc = fs.exists("./src")
+  const hasMainCjs = fs.exists("./build/cjs/index.js");
+  const hasMainMjs = fs.exists("./build/mjs/index.mjs");
+  const hasMainEsm = fs.exists("./build/esm/index.js");
+  const hasCjs = fs.exists("./build/cjs");
+  const hasMjs = fs.exists("./build/mjs");
+  const hasEsm = fs.exists("./build/esm");
+  const hasDts = fs.exists("./build/dts");
+  const hasSrc = fs.exists("./src");
 
   return yield* _(
-    Effect.all({
-      packageJson,
-      hasMainCjs,
-      hasMainMjs,
-      hasMainEsm,
-      hasCjs,
-      hasMjs,
-      hasEsm,
-      hasDts,
-      hasSrc,
-    }, { concurrency: "inherit" }),
+    Effect.all(
+      {
+        packageJson,
+        hasMainCjs,
+        hasMainMjs,
+        hasMainEsm,
+        hasCjs,
+        hasMjs,
+        hasEsm,
+        hasDts,
+        hasSrc,
+      },
+      { concurrency: "inherit" },
+    ),
     Effect.let(
       "hasMain",
       ({ hasMainCjs, hasMainEsm, hasMainMjs }) =>
         hasMainCjs || hasMainMjs || hasMainEsm,
     ),
     Effect.withSpan("PackageContext/make"),
-  )
-})
+  );
+});
 
 export interface PackageContext extends Effect.Effect.Success<typeof make> {}
 export const PackageContext = Context.GenericTag<PackageContext>(
   "@effect/build-tools/PackageContext",
-)
+);
 export const PackageContextLive = Layer.effect(PackageContext, make).pipe(
   Layer.provide(NodeFileSystem.layer),
-)
+);
