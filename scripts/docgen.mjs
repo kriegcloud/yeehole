@@ -31,42 +31,44 @@ function runDocgenInDir(pkgDir) {
 }
 
 async function main() {
-  const packagesDir = "packages";
+  const packageDirs = ["packages", "packages/libs"];
 
-  let entries;
-  try {
-    entries = await readdir(packagesDir, { withFileTypes: true });
-  } catch (err) {
-    console.error(`Error reading directory "${packagesDir}": ${err}`);
-    process.exit(1);
-  }
-
-  // Filter to only directories inside the packages folder.
-  const packageDirs = entries
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => join(packagesDir, entry.name));
-
-  // Prepare an array of promises for running the command in each package.
-  const tasks = [];
-  for (const dir of packageDirs) {
+  for (const packagesDir of packageDirs) {
+    let entries;
     try {
-      // Check if the directory contains a package.json file.
-      await stat(join(dir, "package.json"));
-      console.log(`Running docgen in ${dir}...`);
-      tasks.push(runDocgenInDir(dir));
-    } catch {
-      // If package.json does not exist, skip this directory.
-      console.log(`Skipping ${dir} (no package.json found).`);
+      entries = await readdir(packagesDir, { withFileTypes: true });
+    } catch (err) {
+      console.error(`Error reading directory "${packagesDir}": ${err}`);
+      process.exit(1);
     }
-  }
 
-  try {
-    // Run all tasks concurrently.
-    await Promise.all(tasks);
-    console.log("All docgen commands completed successfully.");
-  } catch (err) {
-    console.error(`Error: ${err}`);
-    process.exit(1);
+    // Filter to only directories inside the packages folder.
+    const packageDirs = entries
+        .filter((entry) => entry.isDirectory())
+        .map((entry) => join(packagesDir, entry.name));
+
+    // Prepare an array of promises for running the command in each package.
+    const tasks = [];
+    for (const dir of packageDirs) {
+      try {
+        // Check if the directory contains a package.json file.
+        await stat(join(dir, "package.json"));
+        console.log(`Running docgen in ${dir}...`);
+        tasks.push(runDocgenInDir(dir));
+      } catch {
+        // If package.json does not exist, skip this directory.
+        console.log(`Skipping ${dir} (no package.json found).`);
+      }
+    }
+
+    try {
+      // Run all tasks concurrently.
+      await Promise.all(tasks);
+      console.log("All docgen commands completed successfully.");
+    } catch (err) {
+      console.error(`Error: ${err}`);
+      process.exit(1);
+    }
   }
 }
 

@@ -26,7 +26,6 @@
     "@vitest/expect": "^2.1.4",
     "@vitest/web-worker": "^2.1.4",
     "@ye/build-util": "workspace:^",
-    "@ye/tsconfig": "workspace:^",
     "ast-types": "^0.14.2",
     "babel-plugin-annotate-pure-calls": "^0.5.0",
     "fast-check": "^3.23.1",
@@ -77,5 +76,5 @@
     "test": "bun turbo test"
   },
   "type": "module",
-  "workspaces": ["packages/*", "tooling/*"]
+  "workspaces": ["packages/*", "tooling/*", "packages/libs/*"]
 }

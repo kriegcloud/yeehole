@@ -32,7 +32,8 @@
       "complexity": {
         "useLiteralKeys": "off",
         "noForEach": "off",
-        "noStaticOnlyClass": "off"
+        "noStaticOnlyClass": "off",
+        "useArrowFunction": "off",
       },
       "recommended": true,
       "correctness": {
@@ -51,6 +52,7 @@
         "noThenProperty": "off"
       },
       "style": {
+        "noArguments": "off",
         "useImportType": "off",
         "noUnusedTemplateLiteral": "off",
         "noParameterAssign": "off",

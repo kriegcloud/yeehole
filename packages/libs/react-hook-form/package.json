@@ -1,27 +1,25 @@
 {
-  "name": "@ye/domain",
+  "name": "@ye/react-hook-form",
   "description": "The domain package for YeetUnion",
   "version": "0.1.0",
   "bugs": "https://github.com/kriegcloud/yeet-union/issues",
   "dependencies": {
-    "@standard-schema/spec": "^1.0.0",
-    "effect": "latest"
+    "@hookform/resolvers": "^4.1.0",
+    "effect": "latest",
+    "react-hook-form": "^7.54.2"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
   },
   "devDependencies": {
+    "@types/react": "^19.0.8",
     "@effect/docgen": "latest",
     "@effect/build-utils": "latest",
     "@ye/build-util": "workspace:^"
   },
   "homepage": "https://yeetunion.com",
   "imports": {
-    "#*": "./src/*"
-  },
-  "exports": {
-    ".": {
-      "import": "./build/esm/index.js",
-      "require": "./build/cjs/index.js",
-      "types": "./build/dts/index.d.ts"
-    }
+    "#/*": "./src/*"
   },
   "license": "MIT",
   "publishConfig": {

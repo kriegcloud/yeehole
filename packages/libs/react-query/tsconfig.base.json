@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "display": "Base Configuration",
+  "compilerOptions": {
+    "esModuleInterop": false,
+    "skipLibCheck": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "exactOptionalPropertyTypes": false,
+    "module": "preserve",
+    "target": "ES2022",
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "types": [],
+    "composite": true,
+    "declaration": true,
+    "allowJs": false,
+    "downlevelIteration": true,
+    "sourceMap": true,
+    "checkJs": false,
+    "jsx": "react",
+    "declarationMap": true,
+    "resolveJsonModule": true,
+    "moduleDetection": "force",
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": true,
+    "noEmitOnError": false,
+    "noErrorTruncation": false,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "strict": true,
+    "noUncheckedIndexedAccess": false,
+    "strictNullChecks": true,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "noImplicitOverride": true,
+    "removeComments": false,
+    "incremental": true,
+    "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
+    "plugins": [
+      {
+        "name": "@effect/language-service"
+      }
+    ],
+    "outDir": "./dist",
+    "baseUrl": ".",
+    "rootDir": "./src",
+    "paths": {
+      "#/*": [
+        "./src/*"
+      ]
+    }
+  },
+  "include": [
+    "./src",
+    "./src/**/*.json"
+  ],
+  "exclude": [
+    "./node_modules",
+    "./dist"
+  ]
+}

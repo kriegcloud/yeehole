@@ -1,4 +1,0 @@
-{
-  "extends": "@ye/tsconfig/base.tsconfig.json",
-  "exclude": ["apps", "packages", "node_modules", "tooling", "scripts"]
-}
