@@ -2,221 +2,22 @@ import * as O from "effect/Option";
 import * as F from "effect/Function";
 import * as AST from "effect/SchemaAST";
 import * as S from "effect/Schema";
-import * as Data from "effect/Data";
-import * as Effect from "effect/Effect";
-import * as Match from "effect/Match";
-import * as B from "./brand";
-import {makeEnum} from "./factories";
+import * as B from "./Brand";
 import * as JSONSchema from "effect/JSONSchema";
 import type {Mutable} from "effect/Types";
 import {Ref} from "effect";
-
-/**
- * Metadata injected b y the log transform plugin.
- *
- * Field names are intentionally short to reduce the size of the generated code.
- */
-export interface CallMetadata {
-  /**
-   * File name.
-   */
-  F: string;
-
-  /**
-   * Line number.
-   */
-  L: number;
-
-  /**
-   * Value of `this` at the site of the log call.
-   * Will be set to the class instance if the call is inside a method, or to the `globalThis` (`window` or `global`) otherwise.
-   */
-  S: any | undefined;
-
-  /**
-   * A callback that will invoke the provided function with provided arguments.
-   * Useful in the browser to force a `console.log` call to have a certain stack-trace.
-   */
-  C?: (fn: Function, args: any[]) => void;
-
-  /**
-   * Source code of the argument list.
-   */
-  A?: string[];
-}
-
-export type InvariantFn = (condition: unknown, message?: string, meta?: CallMetadata) => asserts condition;
-/**
- * Asserts that the condition is true.
- *
- * @param condition
- * @param message Optional message. If it starts with "BUG" then the program will break if this invariant fails if the debugger is attached.
- * @param meta
- */
-export const invariant: InvariantFn = (
-  condition: unknown,
-  message?: string,
-  meta?: CallMetadata,
-): asserts condition => {
-  if (condition) {
-    return;
-  }
-
-  if (message?.startsWith('BUG')) {
-    // This invariant is a debug bug-check: break if the debugger is attached.
-    debugger;
-  }
-
-  let errorMessage = 'invariant violation';
-
-  if (message) {
-    errorMessage += `: ${message}`;
-  }
-
-  if (meta?.A) {
-    errorMessage += ` [${meta.A[0]}]`;
-  }
-
-  if (meta?.F) {
-    errorMessage += ` at ${getRelativeFilename(meta.F)}:${meta.L}`;
-  }
-
-  throw new InvariantViolation(errorMessage);
-};
-
-export class InvariantViolation extends Error {
-  constructor(message: string) {
-    super(message);
-    // NOTE: Restores prototype chain (https://stackoverflow.com/a/48342359).
-    Object.setPrototypeOf(this, new.target.prototype);
-  }
-}
-
-const getRelativeFilename = (filename: string) => {
-  // TODO(burdon): Hack uses "packages" as an anchor (pre-parse NX?)
-  // Including `packages/` part of the path so that excluded paths (e.g. from dist) are clickable in vscode.
-  const match = filename.match(/.+\/(packages\/.+\/.+)/);
-  if (match) {
-    const [, filePath] = match;
-    return filePath;
-  }
-
-  return filename;
-};
-
-export const failedInvariant = (message1?: unknown, message2?: string, meta?: CallMetadata): never => {
-  let errorMessage = 'invariant violation';
-
-  const message = [message1, message2].filter((str) => typeof str === 'string').join(' ');
-
-  if (message) {
-    errorMessage += `: ${message}`;
-  }
-
-  if (meta?.A) {
-    errorMessage += ` [${meta.A[0]}]`;
-  }
-
-  if (meta?.F) {
-    errorMessage += ` at ${getRelativeFilename(meta.F)}:${meta.L}`;
-  }
-
-  throw new InvariantViolation(errorMessage);
-};
-// TODO(burdon): Change to Buffer (same as key)?
+import { invariant } from "./invariant";
+// TODO brand this
 export type ObjectId = string;
 
-/**
- * DXN unambiguously names a resource like an ECHO object, schema definition, plugin, etc.
- * Each DXN starts with a dx prefix, followed by a resource kind.
- * Colon Symbol : is used a delimiter between parts.
- * DXNs may contain slashes.
- * '@' in the place of the space id is used to denote that the DXN should be resolved in the local space.
- *
- * @example
- *
- * ```
- * dx:echo:<space key>:<echo id>
- * dx:echo:BA25QRC2FEWCSAMRP4RZL65LWJ7352CKE:01J00J9B45YHYSGZQTQMSKMGJ6
- * dx:echo:@:01J00J9B45YHYSGZQTQMSKMGJ6
- * dx:type:dxos.org/type/Calendar
- * dx:plugin:dxos.org/agent/plugin/functions
- * ```
- */
-export class DXN {
-  /**
-   * Kind constants.
-   */
-  static kind = Object.freeze({
-    ECHO: 'echo',
-    TYPE: 'type',
-  });
-
-  static parse(dxn: string): DXN {
-    const [prefix, kind, ...parts] = dxn.split(':');
-    if (!(prefix === 'dxn')) {
-      throw new Error('Invalid DXN');
-    }
-    if (!(typeof kind === 'string' && kind.length > 0)) {
-      throw new Error('Invalid DXN');
-    }
-    if (!(parts.length > 0)) {
-      throw new Error('Invalid DXN');
-    }
-    return new DXN(kind, parts);
-  }
-
-  #kind: string;
-  #parts: string[];
-
-  constructor(kind: string, parts: string[]) {
-    invariant(parts.length > 0);
-    invariant(parts.every((part) => typeof part === 'string' && part.length > 0 && part.indexOf(':') === -1));
-
-    // Per-type validation.
-    switch (kind) {
-      case DXN.kind.ECHO:
-        invariant(parts.length === 2);
-        break;
-      case DXN.kind.TYPE:
-        invariant(parts.length === 1);
-        break;
-    }
-
-    this.#kind = kind;
-    this.#parts = parts;
-  }
-
-  get kind() {
-    return this.#kind;
-  }
-
-  get parts() {
-    return this.#parts;
-  }
-
-  isTypeDXNOf(typename: string) {
-    return this.#kind === DXN.kind.TYPE && this.#parts.length === 1 && this.#parts[0] === typename;
-  }
-
-  toString() {
-    return `dxn:${this.#kind}:${this.#parts.join(':')}`;
-  }
-}
-
-/**
- * Tags for ECHO DXNs that should resolve the object ID in the local space.
- */
-export const LOCAL_SPACE_TAG = '@';
-
-export const FieldMetaAnnotationId = Symbol.for('@dxos/schema/annotation/FieldMeta');
+export const FieldMetaAnnotationId = Symbol.for('@moses/schema/annotation/FieldMeta');
 export type FieldMetaValue = Record<string, string | number | boolean | undefined>;
 /**
- * Echo object metadata.
+ * Moses object metadata.
  */
 export type ObjectMeta = {
   /**
-   * Foreign keys.
+   * TODO Foreign keys. or other shib?
    */
   // keys: ForeignKey[];
 };
@@ -241,7 +42,6 @@ export interface ReactiveHandler<T extends {}> extends ProxyHandler<T> {
 
 
   getSchema(target: T): S.Schema<any> | undefined;
-
 
   /**
    * We always store a type reference together with an object, but schema might not have been
@@ -337,35 +137,28 @@ export class Reference {
   /**
    * Protocol references to runtime registered types.
    */
-  static TYPE_PROTOCOL = 'protobuf';
+  static TYPE_PROTOCOL = 'beephole';
 
   // static fromValue(value: ReferenceProto): Reference {
   //   return new Reference(value.objectId, value.protocol, value.host);
   // }
 
-  /**
-   * @deprecated
-   */
-  // TODO(burdon): Document/remove?
+  // static fromE2N(e2n: E2N): Reference {
+  //
+  //   if (e2n.kind !== E2N.kind.MOSES) {
+  //     throw new Error(`Unsupported E2N kind: ${e2n.kind}`)
+  //   }
+  //   if (e2n.parts[0] === LOCAL_SPACE_TAG) {
+  //     return new Reference(e2n.parts[1]);
+  //   } else {
+  //     return new Reference(e2n.parts[1], undefined, e2n.parts[0]);
+  //   }
+  // }
 
-
-  static fromDXN(dxn: DXN): Reference {
-
-    if (dxn.kind !== DXN.kind.ECHO) {
-      throw new Error(`Unsupported DXN kind: ${dxn.kind}`)
-    }
-    if (dxn.parts[0] === LOCAL_SPACE_TAG) {
-      return new Reference(dxn.parts[1]);
-    } else {
-      return new Reference(dxn.parts[1], undefined, dxn.parts[0]);
-    }
-  }
-
-  // prettier-ignore
   constructor(
     public readonly objectId: ObjectId,
-    public readonly protocol?: string,
-    public readonly host?: string
+    // public readonly protocol?: string,
+    // public readonly host?: string
   ) {
   }
 
@@ -373,27 +166,26 @@ export class Reference {
   //   return { objectId: this.objectId, host: this.host, protocol: this.protocol };
   // }
 
-  toDXN(): DXN {
-    if (this.protocol === Reference.TYPE_PROTOCOL) {
-      return new DXN(DXN.kind.TYPE, [this.objectId]);
-    } else {
-      if (this.host) {
-        // Host is assumed to be the space key.
-        // The DXN should actually have the space ID.
-        // TODO(dmaretskyi): Migrate to space id.
-        return new DXN(DXN.kind.ECHO, [this.host, this.objectId]);
-      } else {
-        return new DXN(DXN.kind.ECHO, [LOCAL_SPACE_TAG, this.objectId]);
-      }
-    }
-  }
+  // toE2N(): E2N {
+  //   if (this.protocol === Reference.TYPE_PROTOCOL) {
+  //     return new E2N(E2N.kind.TYPE, [this.objectId]);
+  //   } else {
+  //     if (this.host) {
+  //       // Host is assumed to be the space key.
+  //       // The E2N should actually have the space ID.
+  //       return new E2N(E2N.kind.MOSES, [this.host, this.objectId]);
+  //     } else {
+  //       return new E2N(E2N.kind.MOSES, [LOCAL_SPACE_TAG, this.objectId]);
+  //     }
+  //   }
+  // }
 }
 
 export const getTypeReference = (schema: S.Schema<any> | undefined): Reference | undefined => {
   if (!schema) {
     return undefined;
   }
-  const annotation = getEchoObjectAnnotation(schema);
+  const annotation = getMosesObjectAnnotation(schema);
   if (annotation == null) {
     return undefined;
   }
@@ -404,7 +196,7 @@ export const getTypeReference = (schema: S.Schema<any> | undefined): Reference |
   return undefined
 };
 
-type TypedObjectOptions = {
+type ObjectTypeOptions = {
   partial?: true;
   record?: true;
 };
@@ -412,7 +204,7 @@ type TypedObjectOptions = {
 /**
  * Marker interface for typed objects (for type inference).
  */
-export interface AbstractTypedObject<Fields> extends S.Schema<Fields> {
+export interface AbstractObjectType<Fields> extends S.Schema<Fields> {
   // Type constructor.
   new(): Fields;
 
@@ -424,15 +216,14 @@ export interface AbstractTypedObject<Fields> extends S.Schema<Fields> {
 /**
  * Base class factory for typed objects.
  */
-// TODO(burdon): Rename ObjectType.
-export const TypedObject = <Klass>(args: EchoObjectAnnotation) => {
+export const ObjectType = <Klass>(args: MosesObjectAnnotation) => {
   invariant(
-    typeof args.typename === 'string' && args.typename.length > 0 && !args.typename.includes(':'),
+    args.typename.length > 0 && !args.typename.includes(':'),
     'Invalid typename.',
   );
 
   return <
-    Options extends TypedObjectOptions,
+    Options extends ObjectTypeOptions,
     SchemaFields extends S.Struct.Fields,
     SimplifiedFields = Options['partial'] extends boolean
       ? S.SimplifyMutable<Partial<S.Struct.Type<SchemaFields>>>
@@ -443,12 +234,12 @@ export const TypedObject = <Klass>(args: EchoObjectAnnotation) => {
   >(
     fields: SchemaFields,
     options?: Options,
-  ): AbstractTypedObject<Fields> => {
+  ): AbstractObjectType<Fields> => {
     const fieldsSchema = options?.record ? S.Struct(fields, {key: S.String, value: S.Any}) : S.Struct(fields);
     const schemaWithModifiers = S.mutable(options?.partial ? S.partial(S.asSchema(fieldsSchema)) : fieldsSchema);
     const typeSchema = S.extend(schemaWithModifiers, S.Struct({id: S.String}));
     const annotatedSchema = typeSchema.annotations({
-      [EchoObjectAnnotationId]: {typename: args.typename, version: args.version},
+      [MosesObjectAnnotationId]: {typename: args.typename, version: args.version},
     });
 
     return class {
@@ -466,11 +257,12 @@ export const TypedObject = <Klass>(args: EchoObjectAnnotation) => {
       private constructor() {
         throw new Error('Use create(MyClass, fields) to instantiate an object.');
       }
+      // TODO: fix type assertion
     } as any;
   };
 };
 
-export class StoredSchema extends TypedObject({typename: 'dxos.echo.StoredSchema', version: '0.1.0'})({
+export class StoredSchema extends ObjectType({typename: 'e2.moses.StoredSchema', version: '0.1.0'})({
   typename: S.String,
   version: S.String,
   jsonSchema: S.Any,
@@ -482,74 +274,65 @@ export const schemaVariance = {
   _I: (_: any) => _,
   _R: (_: never) => _,
 };
-export const getEchoObjectAnnotation = (schema: S.Schema<any>): EchoObjectAnnotation | undefined =>
+
+export const getMosesObjectAnnotation = (schema: S.Schema<any>): MosesObjectAnnotation | undefined =>
   F.pipe(
-    AST.getAnnotation<EchoObjectAnnotation>(EchoObjectAnnotationId)(schema.ast),
+    AST.getAnnotation<MosesObjectAnnotation>(MosesObjectAnnotationId)(schema.ast),
     O.getOrElse(() => undefined),
   );
 
-// TODO(burdon): Rename getTypename.
-export const getEchoObjectTypename = (schema: S.Schema<any>): string | undefined =>
-  getEchoObjectAnnotation(schema)?.typename;
-// TODO(burdon): AbstractTypedObject?
-export const getTypename = <T extends AST.AST>(obj: T): string | undefined => (getType(obj) as AST.AST & { objectId: string })?.objectId;
+export const getTypename = <T extends AST.AST>(obj: T): string | undefined => (getType(obj) as AST.AST & {
+  objectId: string
+})?.objectId;
 
 export interface Identifiable {
   readonly id: string;
 }
 
-export interface DynamicSchemaConstructor extends S.Schema<DynamicSchema> {
-  new(): Identifiable;
+export class DynamicSchemaBase {
+  static get ast() {
+    return this._schema.ast;
+  }
+
+  static readonly [S.TypeId] = schemaVariance;
+
+  static get annotations() {
+    const schema = this._schema;
+    return schema.annotations.bind(schema);
+  }
+
+  static get pipe() {
+    const schema = this._schema;
+    return schema.pipe.bind(schema);
+  }
+
+  private static get _schema() {
+    // The field is DynamicMosesSchema in runtime, but is serialized as StoredMosesSchema in auto-merge.
+    return S.Union(StoredSchema, S.instanceOf(DynamicSchema)).annotations(StoredSchema.ast.annotations);
+  }
 }
 
-// TODO(burdon): Why is this a function?
-export const DynamicSchemaBase = (): DynamicSchemaConstructor => {
-  return class {
-    static get ast() {
-      return this._schema.ast;
-    }
-
-    static readonly [S.TypeId] = schemaVariance;
-
-    static get annotations() {
-      const schema = this._schema;
-      return schema.annotations.bind(schema);
-    }
-
-    static get pipe() {
-      const schema = this._schema;
-      return schema.pipe.bind(schema);
-    }
-
-    private static get _schema() {
-      // The field is DynamicEchoSchema in runtime, but is serialized as StoredEchoSchema in automerge.
-      return S.Union(StoredSchema, S.instanceOf(DynamicSchema)).annotations(StoredSchema.ast.annotations);
-    }
-  } as any;
-};
-
-export class DynamicSchema extends DynamicSchemaBase()
-implements S.Schema<Identifiable>
-{
+export class DynamicSchema extends DynamicSchemaBase
+  implements S.Schema<Identifiable> {
   public readonly Context!: never;
   private _schema: S.Schema<Identifiable> | undefined;
   private _isDirty = true;
 
-  // TODO(burdon): Rename property.
-  constructor(public readonly serializedSchema: StoredSchema) {
+
+  constructor(public readonly storedSchema: StoredSchema) {
     super();
   }
 
-  public override get id() {
-    return this.serializedSchema.id;
+  public get id() {
+    return this.storedSchema.id;
   }
 
   public get Type() {
-    return this.serializedSchema;
+    return this.storedSchema;
   }
 
   public get Encoded() {
-    return this.serializedSchema;
+    return this.storedSchema;
   }
 
   public get ast() {
@@ -566,7 +349,6 @@ implements S.Schema<Identifiable>
     return schema.pipe.bind(schema);
   }
 
-  // TODO(burdon): Comment?
   public get [S.TypeId]() {
     return schemaVariance;
   }
@@ -576,28 +358,25 @@ implements S.Schema<Identifiable>
   }
 
   public get typename(): string {
-    return this.serializedSchema.typename;
+    return this.storedSchema.typename;
   }
 
-  // TODO(burdon): Rename.
-  invalidate() {
+  isDirty() {
     this._isDirty = true;
   }
 
-  // TODO(burdon): Rename addFields?
-  public addColumns(fields: S.Struct.Fields) {
+  public addFields(fields: S.Struct.Fields) {
     const oldSchema = this._getSchema();
     const schemaExtension = S.partial(S.Struct(fields));
     const extended = S.extend(oldSchema, schemaExtension).annotations(
       oldSchema.ast.annotations,
     ) as any as S.Schema<Identifiable>;
-    this.serializedSchema.jsonSchema = effectToJsonSchema(extended);
+    this.storedSchema.jsonSchema = effectToJsonSchema(extended);
   }
 
-  // TODO(burdon): Rename updateFields?
-  public updateColumns(fields: S.Struct.Fields) {
+  public updateFields(fields: S.Struct.Fields) {
     const oldAst = this._getSchema().ast;
-    // invariant(AST.isTypeLiteral(oldAst));
+    invariant(AST.isTypeLiteral(oldAst));
     const propertiesToUpdate = (S.partial(S.Struct(fields)).ast as AST.TypeLiteral).propertySignatures;
     const updatedProperties: AST.PropertySignature[] = [...AST.getPropertySignatures(oldAst)];
     for (const property of propertiesToUpdate) {
@@ -611,38 +390,35 @@ implements S.Schema<Identifiable>
 
     const newAst: any = {...oldAst, propertySignatures: updatedProperties};
     const schemaWithUpdatedColumns = S.make(newAst);
-    this.serializedSchema.jsonSchema = effectToJsonSchema(schemaWithUpdatedColumns);
+    this.storedSchema.jsonSchema = effectToJsonSchema(schemaWithUpdatedColumns);
   }
 
-  // TODO(burdon): Rename removeFields?
-  public removeColumns(columnsNames: string[]) {
+  public removeFields(columnsNames: string[]) {
     const oldSchema = this._getSchema();
     const newSchema = S.make(AST.omit(oldSchema.ast, columnsNames)).annotations(oldSchema.ast.annotations);
-    this.serializedSchema.jsonSchema = effectToJsonSchema(newSchema);
+    this.storedSchema.jsonSchema = effectToJsonSchema(newSchema);
   }
 
   public getProperties(): AST.PropertySignature[] {
     const ast = this._getSchema().ast;
-    // invariant(AST.isTypeLiteral(ast));
+    invariant(AST.isTypeLiteral(ast));
     return [...AST.getPropertySignatures(ast)].filter((p) => p.name !== 'id').map(unwrapOptionality);
   }
 
-  // TODO(burdon): Rename updateProperty?
-  public updatePropertyName({before, after}: { before: PropertyKey; after: PropertyKey }) {
+  public updateProperty({before, after}: { before: PropertyKey; after: PropertyKey }) {
     const oldAST = this._getSchema().ast;
-    // invariant(AST.isTypeLiteral(oldAST));
+    invariant(AST.isTypeLiteral(oldAST));
     const newAst: any = {
       ...oldAST,
       propertySignatures: AST.getPropertySignatures(oldAST).map((p) => (p.name === before ? {...p, name: after} : p)),
-      // oldAST.propertySignatures.map((p) => (p.name === before ? { ...p, name: after } : p)),
     };
     const schemaWithUpdatedColumns = S.make(newAst);
-    this.serializedSchema.jsonSchema = effectToJsonSchema(schemaWithUpdatedColumns);
+    this.storedSchema.jsonSchema = effectToJsonSchema(schemaWithUpdatedColumns);
   }
 
   private _getSchema() {
     if (this._isDirty || this._schema == null) {
-      this._schema = jsonToEffectSchema(unwrapProxy(this.serializedSchema.jsonSchema));
+      this._schema = jsonToEffectSchema(unwrapProxy(this.storedSchema.jsonSchema));
       this._isDirty = false;
     }
 
@@ -654,7 +430,6 @@ const unwrapOptionality = (property: AST.PropertySignature): AST.PropertySignatu
   if (!AST.isUnion(property.type)) {
     return property;
   }
-
   return {
     ...property,
     type: property.type.types.find((p) => !AST.isUndefinedKeyword(p))!,
@@ -678,11 +453,14 @@ const unwrapProxy = (jsonSchema: any): any => {
 };
 export const symbolIsProxy = Symbol('isProxy');
 export type ReactiveObject<T> = { [K in keyof T]: T[K] };
+
 export const isReactiveObject = (value: unknown): value is ReactiveObject<any> => !!(value as any)?.[symbolIsProxy];
-export const EXPANDO_TYPENAME = 'dxos.org/type/Expando';
-export const createEchoReferenceSchema = (annotation: EchoObjectAnnotation): S.Schema<any> => {
+
+export const EXPANDED_TYPENAME = 'e2solutionsinc';
+
+export const createMosesReferenceSchema = (annotation: MosesObjectAnnotation): S.Schema<any> => {
   const typePredicate =
-    annotation.typename === EXPANDO_TYPENAME
+    annotation.typename === EXPANDED_TYPENAME
       ? () => true
       : (obj: object) => getTypename(obj as AST.AST) === (annotation.schemaId ?? annotation.typename);
   return S.Any.pipe(
@@ -703,11 +481,11 @@ export const createEchoReferenceSchema = (annotation: EchoObjectAnnotation): S.S
 };
 
 export const ref = <T extends Identifiable>(schema: S.Schema<T>): S.Schema<Ref.Ref<T>> => {
-  const annotation = getEchoObjectAnnotation(schema);
+  const annotation = getMosesObjectAnnotation(schema);
   if (annotation == null) {
-    throw new Error('Reference target must be an ECHO object.');
+    throw new Error('Reference target must be an MOSES object.');
   }
-  return createEchoReferenceSchema(annotation);
+  return createMosesReferenceSchema(annotation);
 };
 
 export type FieldMetaAnnotation = {
@@ -731,26 +509,26 @@ export const getFieldMetaAnnotation = <T>(field: AST.PropertySignature, namespac
     O.map((meta) => meta[namespace] as T),
     O.getOrElse(() => undefined),
   );
-export const EchoObjectAnnotationId = Symbol.for('@dxos/schema/annotation/EchoObject');
+export const MosesObjectAnnotationId = Symbol.for('@moses/schema/annotation/MosesObject');
 
-export type EchoObjectAnnotation = {
+export type MosesObjectAnnotation = {
   schemaId?: string;
   typename: string;
   version: string;
 };
 
-const ECHO_REFINEMENT_KEY = '$echo';
+const MOSES_REFINEMENT_KEY = '$moses';
 
-interface EchoRefinement {
-  type?: EchoObjectAnnotation;
-  reference?: EchoObjectAnnotation;
+interface MosesRefinement {
+  type?: MosesObjectAnnotation;
+  reference?: MosesObjectAnnotation;
   fieldMeta?: FieldMetaAnnotation;
 }
 
 
-export const ReferenceAnnotationId = Symbol.for('@dxos/schema/annotation/Reference');
+export const ReferenceAnnotationId = Symbol.for('@moses/schema/annotation/Reference');
 
-export type ReferenceAnnotationValue = EchoObjectAnnotation;
+export type ReferenceAnnotationValue = MosesObjectAnnotation;
 
 export const getReferenceAnnotation = (schema: S.Schema<any>) =>
   F.pipe(
@@ -758,8 +536,8 @@ export const getReferenceAnnotation = (schema: S.Schema<any>) =>
     O.getOrElse(() => undefined),
   );
 
-const annotationToRefinementKey: { [annotation: symbol]: keyof EchoRefinement } = {
-  [EchoObjectAnnotationId]: 'type',
+const annotationToRefinementKey: { [annotation: symbol]: keyof MosesRefinement } = {
+  [MosesObjectAnnotationId]: 'type',
   [ReferenceAnnotationId]: 'reference',
   [FieldMetaAnnotationId]: 'fieldMeta',
 };
@@ -789,45 +567,45 @@ export const getType = (node: AST.AST): AST.AST | undefined => {
 // https://effect-ts.github.io/effect/schema/AST.ts.html
 //
 // TODO: tuples, unions, refinements, etc, are not supported.
-export const Primitive = S.Literal("object", "string", "number", "boolean", "enum", "literal");
-export const Primitives = Primitive.literals;
-export type PrimitiveType = typeof Primitive.Type;
-export const PrimitiveEnum = makeEnum(Primitives);
-
-export class UnsupportedPrimitiveTypeError extends Data.TaggedError("UnsupportedPrimitiveTypeError")<{
-  readonly message: string;
-}> {
-}
-
-export const matchPrimitiveType = (node: AST.AST) => Match.value(node).pipe(
-  Match.when(
-    (v) => AST.isObjectKeyword(v) || AST.isTypeLiteral(v),
-    (_) => "object" as const
-  ),
-  Match.when(
-    (v) => AST.isStringKeyword(v),
-    (_) => "string" as const
-  ),
-  Match.when((v) => AST.isNumberKeyword(v), (_) => "number" as const),
-  Match.when((v) => AST.isBooleanKeyword(v), (_) => "boolean" as const),
-  Match.when((v) => AST.isEnums(v), (_) => "enum" as const),
-  Match.when((v) => AST.isLiteral(v), (_) => "literal" as const),
-  Match.orElse(() => undefined)
-)
-
-export const getPrimitiveType = (node: AST.AST) =>
-  Effect.sync(() => {
-    const type = matchPrimitiveType(node)
-    if (typeof type === "undefined") {
-      return Effect.fail(() => new UnsupportedPrimitiveTypeError({
-        message: "Unsupported primitive type",
-      }))
-    }
-
-    return Effect.succeed(type);
-  })
-
-export const isPrimitiveType = (node: AST.AST) => !!getPrimitiveType(node);
+// export const Primitive = S.Literal("object", "string", "number", "boolean", "enum", "literal");
+// export const Primitives = Primitive.literals;
+// export type PrimitiveType = typeof Primitive.Type;
+// export const PrimitiveEnum = makeEnum(Primitives);
+//
+// export class UnsupportedPrimitiveTypeError extends Data.TaggedError("UnsupportedPrimitiveTypeError")<{
+//   readonly message: string;
+// }> {
+// }
+//
+// export const matchPrimitiveType = (node: AST.AST) => Match.value(node).pipe(
+//   Match.when(
+//     (v) => AST.isObjectKeyword(v) || AST.isTypeLiteral(v),
+//     (_) => "object" as const
+//   ),
+//   Match.when(
+//     (v) => AST.isStringKeyword(v),
+//     (_) => "string" as const
+//   ),
+//   Match.when((v) => AST.isNumberKeyword(v), (_) => "number" as const),
+//   Match.when((v) => AST.isBooleanKeyword(v), (_) => "boolean" as const),
+//   Match.when((v) => AST.isEnums(v), (_) => "enum" as const),
+//   Match.when((v) => AST.isLiteral(v), (_) => "literal" as const),
+//   Match.orElse(() => undefined)
+// )
+//
+// export const getPrimitiveType = (node: AST.AST) =>
+//   Effect.sync(() => {
+//     const type = matchPrimitiveType(node)
+//     if (typeof type === "undefined") {
+//       return Effect.fail(() => new UnsupportedPrimitiveTypeError({
+//         message: "Unsupported primitive type",
+//       }))
+//     }
+//
+//     return Effect.succeed(type);
+//   })
+//
+// export const isPrimitiveType = (node: AST.AST) => !!getPrimitiveType(node);
 
 //
 // Branded types
@@ -855,32 +633,29 @@ export const JsonPath = S.NonEmptyString.pipe(
 export type JsonPath = typeof JsonPath.Type;
 
 /**
- * Get annotation or return undefined.
- */
-// export const getAnnotation =
-//   <T>(annotationId: symbol) =>
-//     (node: AST.Annotated): T | undefined =>
-//       F.pipe(AST.getAnnotation<T>(annotationId)(node), O.getOrUndefined);
-
-
-/**
  * Get the AST node for the given property (dot-path).
  */
 export const getProperty = (schema: S.Schema<any>, path: string): AST.AST | undefined => {
   let node: AST.AST = schema.ast;
-  for (const part of path.split('.')) {
+  const parts = path.split('.');
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
     const props = AST.getPropertySignatures(node);
     const prop = props.find((prop) => prop.name === part);
     if (!prop) {
       return undefined;
     }
 
-    // TODO(burdon): Check if leaf.
     const type = getType(prop.type);
     invariant(type, `invalid type: ${path}`);
+
+    // If there are still parts left but the current type isn't a container (leaf), then return undefined.
+    if (i < parts.length - 1 && !AST.isTypeLiteral(type)) {
+      return undefined;
+    }
+
     node = type;
   }
-
   return node;
 };
 
@@ -912,29 +687,29 @@ const visitNode = (node: AST.AST, visitor: Visitor, path: string[] = []) => {
 
 
 export const effectToJsonSchema = (schema: S.Schema<any>): any => {
-  const withEchoRefinements = (ast: AST.AST): AST.AST => {
+  const withMosesRefinements = (ast: AST.AST): AST.AST => {
     let recursiveResult: AST.AST = ast;
     if (AST.isTypeLiteral(ast)) {
       recursiveResult = {
         ...ast,
         propertySignatures: ast.propertySignatures.map((prop) => ({
           ...prop,
-          type: withEchoRefinements(prop.type),
+          type: withMosesRefinements(prop.type),
         })),
       } as any;
     } else if (AST.isUnion(ast)) {
-      recursiveResult = {...ast, types: ast.types.map(withEchoRefinements)} as any;
+      recursiveResult = {...ast, types: ast.types.map(withMosesRefinements)} as any;
     } else if (AST.isTupleType(ast)) {
       recursiveResult = {
         ...ast,
-        elements: ast.elements.map((e) => ({...e, type: withEchoRefinements(e.type)})),
-        rest: ast.rest.map((e) => withEchoRefinements(e.type)),
+        elements: ast.elements.map((e) => ({...e, type: withMosesRefinements(e.type)})),
+        rest: ast.rest.map((e) => withMosesRefinements(e.type)),
+        // TODO: rest
       } as any;
     }
 
-    // TOOD: Refinements
-    const refinement: EchoRefinement = {};
-    for (const annotation of [EchoObjectAnnotationId, ReferenceAnnotationId, FieldMetaAnnotationId]) {
+    const refinement: MosesRefinement = {};
+    for (const annotation of [MosesObjectAnnotationId, ReferenceAnnotationId, FieldMetaAnnotationId]) {
       if (ast.annotations[annotation] != null) {
         refinement[annotationToRefinementKey[annotation]] = ast.annotations[annotation] as any;
       }
@@ -943,58 +718,56 @@ export const effectToJsonSchema = (schema: S.Schema<any>): any => {
       return recursiveResult;
     }
     return new AST.Refinement(recursiveResult, () => null as any, {
-      [AST.JSONSchemaAnnotationId]: {[ECHO_REFINEMENT_KEY]: refinement},
+      [AST.JSONSchemaAnnotationId]: {[MOSES_REFINEMENT_KEY]: refinement},
     });
   };
 
-  const schemaWithRefinements = S.make(withEchoRefinements(schema.ast));
+  const schemaWithRefinements = S.make(withMosesRefinements(schema.ast));
   return JSONSchema.make(schemaWithRefinements);
 };
-
 
 const jsonToEffectTypeSchema = (root: JSONSchema.JsonSchema7Object, defs: JSONSchema.JsonSchema7Root['$defs']): S.Schema<any> => {
   invariant('type' in root && root.type === 'object', `not an object: ${root}`);
   invariant(root.patternProperties == null, 'template literals are not supported');
-  const echoRefinement: EchoRefinement = (root as any)[ECHO_REFINEMENT_KEY];
-  const fields: S.Struct.Fields = {};
+  const mosesRefinement: MosesRefinement = (root as any)[MOSES_REFINEMENT_KEY];
+  const fields: Mutable<S.Struct.Fields> = {};
   const propertyList = Object.entries(root.properties ?? {});
   let immutableIdField: S.Schema<any> | undefined;
   for (const [key, value] of propertyList) {
-    if (echoRefinement?.type && key === 'id') {
+    if (mosesRefinement?.type && key === 'id') {
       immutableIdField = jsonToEffectSchema(value, defs);
     } else {
-      // TODO(burdon): Mutable cast.
-      (fields as any)[key] = root.required.includes(key)
+      fields[key] = root.required.includes(key)
         ? jsonToEffectSchema(value, defs)
         : S.optional(jsonToEffectSchema(value, defs));
     }
   }
 
-  let schemaWithoutEchoId: S.Schema<any, any, unknown>;
+  let schemaWithoutMosesId: S.Schema<any, any, unknown>;
   if (typeof root.additionalProperties !== 'object') {
-    schemaWithoutEchoId = S.Struct(fields);
+    schemaWithoutMosesId = S.Struct(fields);
   } else {
     const indexValue = jsonToEffectSchema(root.additionalProperties, defs);
     if (propertyList.length > 0) {
-      schemaWithoutEchoId = S.Struct(fields, {key: S.String, value: indexValue});
+      schemaWithoutMosesId = S.Struct(fields, {key: S.String, value: indexValue});
     } else {
-      schemaWithoutEchoId = S.Record({
+      schemaWithoutMosesId = S.Record({
         key: S.String,
         value: indexValue
       });
     }
   }
 
-  if (echoRefinement == null) {
-    return schemaWithoutEchoId as any;
+  if (mosesRefinement == null) {
+    return schemaWithoutMosesId as any;
   }
 
-  invariant(immutableIdField, 'no id in echo type');
-  const schema = S.extend(S.mutable(schemaWithoutEchoId), S.Struct({id: immutableIdField}));
+  invariant(immutableIdField, 'no id in moses type');
+  const schema = S.extend(S.mutable(schemaWithoutMosesId), S.Struct({id: immutableIdField}));
   const annotations: Mutable<S.Annotations.Schema<any>> = {};
-  for (const annotation of [EchoObjectAnnotationId, ReferenceAnnotationId, FieldMetaAnnotationId]) {
-    if (echoRefinement[annotationToRefinementKey[annotation]]) {
-      annotations[annotation] = echoRefinement[annotationToRefinementKey[annotation]];
+  for (const annotation of [MosesObjectAnnotationId, ReferenceAnnotationId, FieldMetaAnnotationId]) {
+    if (mosesRefinement[annotationToRefinementKey[annotation]]) {
+      annotations[annotation] = mosesRefinement[annotationToRefinementKey[annotation]];
     }
   }
 
@@ -1002,19 +775,19 @@ const jsonToEffectTypeSchema = (root: JSONSchema.JsonSchema7Object, defs: JSONSc
 };
 
 const parseJsonSchemaAny = (root: JSONSchema.JsonSchema7Any): S.Schema<any> => {
-  const echoRefinement: EchoRefinement = (root as any)[ECHO_REFINEMENT_KEY];
-  if (echoRefinement?.reference != null) {
-    return createEchoReferenceSchema(echoRefinement.reference);
+  const mosesRefinement: MosesRefinement = (root as any)[MOSES_REFINEMENT_KEY];
+  if (mosesRefinement?.reference != null) {
+    return createMosesReferenceSchema(mosesRefinement.reference);
   }
   return S.Any;
 };
 
+// TODO use match and pipe
 export const jsonToEffectSchema = (root: JSONSchema.JsonSchema7Root, definitions?: JSONSchema.JsonSchema7Root['$defs']): S.Schema<any> => {
   const defs = root.$defs ? {...definitions, ...root.$defs} : definitions ?? {};
   if ('type' in root && root.type === 'object') {
     return jsonToEffectTypeSchema(root, defs);
   }
-
   let result: S.Schema<any> = {} as S.Schema<any>;
   if ('$id' in root) {
     switch (root.$id) {
@@ -1035,11 +808,7 @@ export const jsonToEffectSchema = (root: JSONSchema.JsonSchema7Root, definitions
     result = S.Union(...root.enum.map((e) => S.Literal(e)));
   } else if ('anyOf' in root) {
     result = S.Union(...root.anyOf.map((v) => jsonToEffectSchema(v, defs)));
-  }
-  // else if ('$comment' in root && root.$comment === '/schemas/enums') {
-  //   result = S.Enums(Object.fromEntries(root.oneOf.map(({title, const: v}) => [title, v])));
-  // }
-  else if ('type' in root) {
+  } else if ('type' in root) {
     switch (root.type) {
       case 'string':
         result = S.String;
@@ -1070,7 +839,7 @@ export const jsonToEffectSchema = (root: JSONSchema.JsonSchema7Root, definitions
   } else {
     result = S.Unknown;
   }
-
-  const refinement: EchoRefinement | undefined = (root as any)[ECHO_REFINEMENT_KEY];
+// TODO: make refinement typesafe
+  const refinement: MosesRefinement | undefined = (root as any)[MOSES_REFINEMENT_KEY];
   return refinement?.fieldMeta ? result.annotations({[FieldMetaAnnotationId]: refinement.fieldMeta}) : result;
 };
